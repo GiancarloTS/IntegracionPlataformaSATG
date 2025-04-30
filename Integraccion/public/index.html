@@ -1,0 +1,102 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferremax - Tu Ferretería de Confianza</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Ferremax</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">Inicio</a></li>
+                <li><a href="#products">Productos</a></li>
+                <li><a href="#about">Nosotros</a></li>
+                <li><a href="carrito.html">Carrito</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home">
+        <h2>Bienvenido a Ferremax</h2>
+        <p>Encuentra todo lo que necesitas para tus proyectos de construcción y reparación.</p>
+    </section>
+
+    <section id="products">
+        <h2>Nuestros Productos</h2>
+        <div id="product-list" class="product-list"></div>
+    </section>
+
+    <script>
+        async function loadProducts() {
+            try {
+                const response = await fetch('http://localhost:3000/productos');
+                const products = await response.json();
+
+                const productList = document.getElementById('product-list');
+                productList.innerHTML = ''; // Limpiar la lista antes de cargar
+
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <h3>${product.nombre}</h3>
+                        <p>${product.descripcion || 'Sin descripción'}</p>
+                        <p>Precio: $${product.precio.toFixed(2)}</p>
+                        <p>Stock: ${product.stock}</p>
+                        <button onclick="addToCart(${product.id})">Agregar al carrito</button>
+                    `;
+                    productList.appendChild(productCard);
+                });
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+            }
+        }
+
+        function addToCart(productId) {
+            fetch(`http://localhost:3000/productos/${productId}`)
+                .then(response => response.json())
+                .then(product => {
+                    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    const existingProduct = cart.find(item => item.id === product.id);
+
+                    if (existingProduct) {
+                        existingProduct.cantidad += 1;
+                    } else {
+                        cart.push({ ...product, cantidad: 1 });
+                    }
+
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    alert(`Producto "${product.nombre}" agregado al carrito.`);
+                })
+                .catch(error => console.error('Error al agregar al carrito:', error));
+        }
+
+        // Cargar productos al cargar la página
+        loadProducts();
+    </script>
+
+    <section id="about">
+        <h2>Sobre Nosotros</h2>
+        <p>En Ferremax, nos dedicamos a ofrecer herramientas y materiales de calidad para tus proyectos.</p>
+    </section>
+
+    <section id="contact">
+        <h2>Contacto</h2>
+        <form>
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="email">Correo Electrónico:</label>
+            <input type="email" id="email" name="email" required>
+            <label for="message">Mensaje:</label>
+            <textarea id="message" name="message" required></textarea>
+            <button type="submit">Enviar</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Ferremax. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
