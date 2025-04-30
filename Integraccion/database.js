@@ -184,11 +184,11 @@ db.serialize(() => {
                 console.error('Error al verificar clientes:', err.message);
             } else if (row.count === 0) {
                 const clientes = [
-                    { nombre: 'Juan Pérez', direccion: 'Calle Falsa 123', telefono: '123456789', email: 'juan@example.com' },
-                    { nombre: 'María López', direccion: 'Av. Siempre Viva 456', telefono: '987654321', email: 'maria@example.com' },
-                    { nombre: 'Carlos Gómez', direccion: 'Pasaje Los Olivos 789', telefono: '456789123', email: 'carlos@example.com' },
-                    { nombre: 'Ana Torres', direccion: 'Camino Real 101', telefono: '789123456', email: 'ana@example.com' },
-                    { nombre: 'Luis Ramírez', direccion: 'Av. Central 202', telefono: '321654987', email: 'luis@example.com' }
+                    { nombre: 'Ruperto', direccion: 'Calle Falsa 123', telefono: '123456789', email: 'juan@example.com' },
+                    { nombre: 'Bruce Wayne', direccion: 'Av. Siempre Viva 456', telefono: '987654321', email: 'maria@example.com' },
+                    { nombre: 'Leo Rey', direccion: 'Pasaje Los Olivos 789', telefono: '456789123', email: 'carlos@example.com' },
+                    { nombre: 'Lucho Jara', direccion: 'Camino Real 101', telefono: '789123456', email: 'ana@example.com' },
+                    { nombre: 'Miguelito', direccion: 'Av. Central 202', telefono: '321654987', email: 'luis@example.com' }
                 ];
                 const insertQuery = `INSERT INTO cliente (nombre, direccion, telefono, email) VALUES (?, ?, ?, ?)`;
                 clientes.forEach((cliente) => {

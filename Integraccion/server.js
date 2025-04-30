@@ -51,6 +51,10 @@ app.post('/create_payment', async (req, res) => {
         console.log('Datos enviados a vexor.pay.mercadopago:', items); // Log para depuración
         const paymentResponse = await vexorInstance.pay.mercadopago({
             items,
+            options:{
+                successRedirect: 'localhost:300/',
+                failureRedirect: 'localhost:3000/'
+            }
         });
 
         console.log('Respuesta de vexor.pay.mercadopago:', paymentResponse); // Log para depuración
