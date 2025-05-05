@@ -10,9 +10,9 @@
         <h1>Ferremax</h1>
         <nav>
             <ul>
-                <li><a href="VistaBodegero\ViewBodge.html">Inicio</a></li>
+                <li><a href="#home">Inicio</a></li>
                 <li><a href="#products">Productos</a></li>
-                <li><a href="#about">Nosotros</a></li>
+                <li><a href="Bd.html">Nosotros</a></li>
                 <li><a href="carrito.html">Carrito</a></li>
             </ul>
         </nav>
@@ -41,6 +41,7 @@
                     const productCard = document.createElement('div');
                     productCard.className = 'product-card';
                     productCard.innerHTML = `
+                        <img src="${product.imagen}" alt="Imagen de ${product.nombre}" class="product-image">
                         <h3>${product.nombre}</h3>
                         <p>${product.descripcion || 'Sin descripción'}</p>
                         <p>Precio: $${product.precio.toFixed(2)}</p>

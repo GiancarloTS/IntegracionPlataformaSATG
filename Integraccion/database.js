@@ -50,6 +50,13 @@ db.serialize(() => {
         if (err) console.error('Error al crear la tabla productos:', err.message);
     });
 
+    // Agregar columna 'imagen' a la tabla 'productos'
+    db.run(`
+        ALTER TABLE productos ADD COLUMN imagen TEXT
+    `, (err) => {
+        if (err) console.error('Error al agregar la columna imagen a la tabla productos:', err.message);
+    });
+
     // Crear tabla "pedidos"
     db.run(`
         CREATE TABLE IF NOT EXISTS pedidos (
@@ -162,15 +169,15 @@ db.serialize(() => {
                 console.error('Error al verificar productos:', err.message);
             } else if (row.count === 0) {
                 const productos = [
-                    { nombre: 'Martillo de Acero', descripcion: 'Martillo resistente para construcción', precio: 12000, categoria_id: 1 },
-                    { nombre: 'Taladro Eléctrico', descripcion: 'Taladro de alta potencia', precio: 19000, categoria_id: 5 },
-                    { nombre: 'Llave Inglesa', descripcion: 'Llave ajustable de acero', precio: 15000, categoria_id: 3 },
-                    { nombre: 'Sierra Circular', descripcion: 'Sierra para cortes precisos', precio: 17000, categoria_id: 6 },
-                    { nombre: 'Cemento Portland', descripcion: 'Cemento de alta calidad', precio: 10000, categoria_id: 10 }
+                    { nombre: 'Martillo de Acero', descripcion: 'Martillo resistente para construcción', precio: 12000, categoria_id: 1, imagen: './public/images/taladro.jpg' },
+                    { nombre: 'Taladro Eléctrico', descripcion: 'Taladro de alta potencia', precio: 19000, categoria_id: 5, imagen: 'images/taladro.jpg' },
+                    { nombre: 'Llave Inglesa', descripcion: 'Llave ajustable de acero', precio: 15000, categoria_id: 3, imagen: 'images/llave.jpg' },
+                    { nombre: 'Sierra Circular', descripcion: 'Sierra para cortes precisos', precio: 17000, categoria_id: 6, imagen: 'images/sierra.jpg' },
+                    { nombre: 'Cemento Portland', descripcion: 'Cemento de alta calidad', precio: 10000, categoria_id: 10, imagen: 'images/cemento.jpg' }
                 ];
-                const insertQuery = `INSERT INTO productos (nombre, descripcion, precio, categoria_id) VALUES (?, ?, ?, ?)`;
+                const insertQuery = `INSERT INTO productos (nombre, descripcion, precio, categoria_id, imagen) VALUES (?, ?, ?, ?, ?)`;
                 productos.forEach((producto) => {
-                    db.run(insertQuery, [producto.nombre, producto.descripcion, producto.precio, producto.categoria_id], (err) => {
+                    db.run(insertQuery, [producto.nombre, producto.descripcion, producto.precio, producto.categoria_id, producto.imagen], (err) => {
                         if (err) console.error('Error al insertar producto:', err.message);
                     });
                 });
@@ -184,11 +191,11 @@ db.serialize(() => {
                 console.error('Error al verificar clientes:', err.message);
             } else if (row.count === 0) {
                 const clientes = [
-                    { nombre: 'Ruperto', direccion: 'Calle Falsa 123', telefono: '123456789', email: 'juan@example.com' },
-                    { nombre: 'Bruce Wayne', direccion: 'Av. Siempre Viva 456', telefono: '987654321', email: 'maria@example.com' },
-                    { nombre: 'Leo Rey', direccion: 'Pasaje Los Olivos 789', telefono: '456789123', email: 'carlos@example.com' },
-                    { nombre: 'Lucho Jara', direccion: 'Camino Real 101', telefono: '789123456', email: 'ana@example.com' },
-                    { nombre: 'Miguelito', direccion: 'Av. Central 202', telefono: '321654987', email: 'luis@example.com' }
+                    { nombre: 'Juan Pérez', direccion: 'Calle Falsa 123', telefono: '123456789', email: 'juan@example.com' },
+                    { nombre: 'María López', direccion: 'Av. Siempre Viva 456', telefono: '987654321', email: 'maria@example.com' },
+                    { nombre: 'Carlos Gómez', direccion: 'Pasaje Los Olivos 789', telefono: '456789123', email: 'carlos@example.com' },
+                    { nombre: 'Ana Torres', direccion: 'Camino Real 101', telefono: '789123456', email: 'ana@example.com' },
+                    { nombre: 'Luis Ramírez', direccion: 'Av. Central 202', telefono: '321654987', email: 'luis@example.com' }
                 ];
                 const insertQuery = `INSERT INTO cliente (nombre, direccion, telefono, email) VALUES (?, ?, ?, ?)`;
                 clientes.forEach((cliente) => {

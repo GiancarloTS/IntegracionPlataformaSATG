@@ -5,6 +5,7 @@ import dotenv from 'dotenv'; // Importar el módulo dotenv para manejar variable
 import { fileURLToPath } from 'url';
 import path from 'path';
 import db from './database.js'; // Importar la base de datos
+import sqlite3 from 'sqlite3'; // Importar el módulo sqlite3
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,10 +52,6 @@ app.post('/create_payment', async (req, res) => {
         console.log('Datos enviados a vexor.pay.mercadopago:', items); // Log para depuración
         const paymentResponse = await vexorInstance.pay.mercadopago({
             items,
-            options:{
-                successRedirect: 'localhost:300/',
-                failureRedirect: 'localhost:3000/'
-            }
         });
 
         console.log('Respuesta de vexor.pay.mercadopago:', paymentResponse); // Log para depuración
@@ -116,10 +113,49 @@ app.get('/productos', (req, res) => {
     });
 });
 
+// Conexión a la base de datos SQLite
+const sqliteDb = new sqlite3.Database('./database.db', (err) => {
+    if (err) {
+        console.error('Error al conectar con la base de datos:', err.message);
+    } else {
+        console.log('Conectado a la base de datos SQLite');
+    }
+});
+
+// Endpoint para obtener todas las tablas y registros
+app.get('/api/database', (req, res) => {
+    sqliteDb.all("SELECT name FROM sqlite_master WHERE type='table'", [], (err, tables) => {
+        if (err) {
+            console.error('Error al obtener las tablas:', err.message);
+            return res.status(500).json({ error: 'Error al obtener las tablas de la base de datos' });
+        }
+
+        const database = {};
+        let pending = tables.length;
+
+        if (pending === 0) {
+            return res.json(database);
+        }
+
+        tables.forEach(table => {
+            sqliteDb.all(`SELECT * FROM ${table.name}`, [], (err, rows) => {
+                if (err) {
+                    console.error(`Error al obtener registros de la tabla ${table.name}:`, err.message);
+                    return res.status(500).json({ error: `Error al obtener registros de la tabla ${table.name}` });
+                }
+
+                database[table.name] = rows;
+                pending -= 1;
+
+                if (pending === 0) {
+                    res.json(database);
+                }
+            });
+        });
+    });
+});
 
 ////////////////////////////////////////////
-
-
 
 // Servir archivos estáticos desde la carpeta "public"
 app.use(express.static('public'));
