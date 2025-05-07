@@ -52,9 +52,68 @@
             </ul>
         </div>
 
+        <div class="report-section">
+            <h2>Generar Reportes</h2>
+            <form id="report-form">
+                <label for="report-type">Seleccione el tipo de reporte:</label>
+                <select id="report-type" name="report-type">
+                    <option value="productos_vendidos">Productos Vendidos</option>
+                    <option value="mas_vendidos">Productos Más Vendidos</option>
+                    <option value="categorias_mas_vendidas">Categorías Más Vendidas</option>
+                </select>
+                <button type="submit">Generar Reporte</button>
+            </form>
+        </div>
+
+        <div class="email-section">
+            <h2>Enviar Reporte por Correo</h2>
+            <form id="email-form">
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" placeholder="Ingrese el correo" required>
+                <label for="report-type-email">Seleccione el tipo de reporte:</label>
+                <select id="report-type-email" name="report-type-email">
+                    <option value="productos_vendidos">Productos Vendidos</option>
+                    <option value="mas_vendidos">Productos Más Vendidos</option>
+                    <option value="categorias_mas_vendidas">Categorías Más Vendidas</option>
+                </select>
+                <button type="submit">Enviar Reporte</button>
+            </form>
+        </div>
+
     </main>
     <footer>
         <p>&copy; 2024 Ferretemax. Todos los derechos reservados.</p>
     </footer>
+    <script>
+        document.getElementById('report-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const reportType = document.getElementById('report-type').value;
+            window.open(`/api/reportes?tipo=${reportType}`, '_blank');
+        });
+
+        document.getElementById('email-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const reportType = document.getElementById('report-type-email').value;
+
+            try {
+                const response = await fetch('/api/enviar-reporte', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, tipo: reportType })
+                });
+
+                if (response.ok) {
+                    alert('Reporte enviado exitosamente al correo proporcionado.');
+                } else {
+                    const error = await response.json();
+                    alert(`Error al enviar el reporte: ${error.error}`);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Ocurrió un error al enviar el reporte.');
+            }
+        });
+    </script>
 </body>
 </html>

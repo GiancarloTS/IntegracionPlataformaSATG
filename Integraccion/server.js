@@ -1,3 +1,111 @@
+/**
+ * Import required modules and initialize the Express application.
+ * 
+ * Modules:
+ * - express: Web framework for Node.js.
+ * - cors: Middleware to enable Cross-Origin Resource Sharing (CORS).
+ * - vexor: Library for error handling and payment processing.
+ * - dotenv: Loads environment variables from a .env file.
+ * - url and path: Utilities for handling file paths.
+ * - sqlite3: SQLite database driver.
+ * - pdfkit: Library for generating PDF documents.
+ * - nodemailer: Module to send emails.
+ * 
+ * Constants:
+ * - __filename: The current file's absolute path.
+ * - __dirname: The directory name of the current module.
+ * 
+ * Environment Variables:
+ * - Loaded using dotenv to configure the application.
+ * 
+ * Vexor Configuration:
+ * - Initialized with publishableKey, projectId, and apiKey for payment processing.
+ */
+
+/**
+ * POST /create_payment
+ * Endpoint to create a payment using Vexor's MercadoPago integration.
+ * 
+ * Request Body:
+ * - products: Array of product objects, each containing:
+ *   - title: Name of the product.
+ *   - unit_price: Price per unit of the product.
+ *   - quantity: Quantity of the product.
+ * 
+ * Response:
+ * - 200: Returns a JSON object with the payment URL.
+ * - 400: Returns an error if the products array is missing or invalid.
+ * - 500: Returns an error if payment creation fails.
+ */
+
+/**
+ * GET /productos/:id
+ * Endpoint to retrieve a product by its ID, including its stock information.
+ * 
+ * Path Parameters:
+ * - id: The ID of the product to retrieve.
+ * 
+ * Response:
+ * - 200: Returns the product details and stock.
+ * - 404: Returns an error if the product is not found.
+ * - 500: Returns an error if there is a database issue.
+ */
+
+/**
+ * GET /productos
+ * Endpoint to retrieve all products, including their stock information.
+ * 
+ * Response:
+ * - 200: Returns an array of products with their details and stock.
+ * - 500: Returns an error if there is a database issue.
+ */
+
+/**
+ * GET /api/database
+ * Endpoint to retrieve all tables and their records from the SQLite database.
+ * 
+ * Response:
+ * - 200: Returns an object containing all tables and their records.
+ * - 500: Returns an error if there is a database issue.
+ */
+
+/**
+ * GET /api/reportes
+ * Endpoint to generate reports in PDF format.
+ * 
+ * Query Parameters:
+ * - tipo: The type of report to generate. Supported values:
+ *   - productos_vendidos: Report of sold products.
+ *   - mas_vendidos: Report of the top 5 most sold products.
+ *   - categorias_mas_vendidas: Report of the most sold categories.
+ * 
+ * Response:
+ * - 200: Returns the generated PDF report as a downloadable file.
+ * - 400: Returns an error if the report type is not specified.
+ * - 500: Returns an error if there is an issue generating the report.
+ */
+
+/**
+ * SQLite Database Connection
+ * Establishes a connection to the SQLite database and logs the status.
+ * 
+ * Error Handling:
+ * - Logs an error message if the connection fails.
+ * - Logs a success message if the connection is established.
+ */
+
+/**
+ * Static File Serving
+ * Serves static files from the "public" directory.
+ */
+
+/**
+ * Application Listener
+ * Starts the Express server and listens on the specified port.
+ * 
+ * Logs:
+ * - The URL where the server is running.
+ */
 import express from 'express'; // Importar el módulo express
 import cors from 'cors'; // Importar el módulo cors para manejar CORS
 import vexor from 'vexor'; // Importar el módulo vexor para manejar errores
@@ -6,6 +114,9 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import db from './database.js'; // Importar la base de datos
 import sqlite3 from 'sqlite3'; // Importar el módulo sqlite3
+import PDFDocument from 'pdfkit'; // Importar el módulo pdfkit para generar PDFs
+import nodemailer from 'nodemailer'; // Importar Nodemailer para enviar correos
+import fs from 'fs'; // Importar el módulo fs para manejar archivos
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,7 +172,6 @@ app.post('/create_payment', async (req, res) => {
         res.status(500).json({ error: error.message || 'Error al crear el pago' });
     }
 });
-
 
 
 
@@ -160,6 +270,228 @@ app.get('/api/database', (req, res) => {
 // Servir archivos estáticos desde la carpeta "public"
 app.use(express.static('public'));
 
+// Endpoint para generar reportes en formato PDF
+app.get('/api/reportes', async (req, res) => {
+    const { tipo } = req.query;
+
+    if (!tipo) {
+        return res.status(400).json({ error: 'Debe especificar el tipo de reporte' });
+    }
+
+    const doc = new PDFDocument();
+    const filename = `reporte_${tipo}_${Date.now()}.pdf`;
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.setHeader('Content-Type', 'application/pdf');
+
+    doc.pipe(res);
+
+    try {
+        doc.fontSize(18).text(`Reporte: ${tipo}`, { align: 'center' });
+        doc.moveDown();
+
+        if (tipo === 'productos_vendidos') {
+            const query = `
+                SELECT p.nombre, SUM(i.cantidad) AS total_vendido
+                FROM inventario i
+                JOIN productos p ON i.producto_id = p.id
+                GROUP BY p.id
+                ORDER BY total_vendido DESC
+            `;
+            db.all(query, [], (err, rows) => {
+                if (err) {
+                    console.error('Error al generar reporte de productos vendidos:', err.message);
+                    doc.text('Error al generar reporte de productos vendidos.');
+                    doc.end();
+                    return;
+                }
+                rows.forEach((row) => {
+                    doc.text(`Producto: ${row.nombre} - Total Vendido: ${row.total_vendido}`);
+                });
+                doc.end();
+            });
+        } else if (tipo === 'mas_vendidos') {
+            const query = `
+                SELECT p.nombre, SUM(i.cantidad) AS total_vendido
+                FROM inventario i
+                JOIN productos p ON i.producto_id = p.id
+                GROUP BY p.id
+                ORDER BY total_vendido DESC
+                LIMIT 5
+            `;
+            db.all(query, [], (err, rows) => {
+                if (err) {
+                    console.error('Error al generar reporte de productos más vendidos:', err.message);
+                    doc.text('Error al generar reporte de productos más vendidos.');
+                    doc.end();
+                    return;
+                }
+                rows.forEach((row) => {
+                    doc.text(`Producto: ${row.nombre} - Total Vendido: ${row.total_vendido}`);
+                });
+                doc.end();
+            });
+        } else if (tipo === 'categorias_mas_vendidas') {
+            const query = `
+                SELECT c.nombre AS categoria, SUM(i.cantidad) AS total_vendido
+                FROM inventario i
+                JOIN productos p ON i.producto_id = p.id
+                JOIN categorias c ON p.categoria_id = c.id
+                GROUP BY c.id
+                ORDER BY total_vendido DESC
+            `;
+            db.all(query, [], (err, rows) => {
+                if (err) {
+                    console.error('Error al generar reporte de categorías más vendidas:', err.message);
+                    doc.text('Error al generar reporte de categorías más vendidas.');
+                    doc.end();
+                    return;
+                }
+                rows.forEach((row) => {
+                    doc.text(`Categoría: ${row.categoria} - Total Vendido: ${row.total_vendido}`);
+                });
+                doc.end();
+            });
+        } else {
+            doc.text('Tipo de reporte no válido.');
+            doc.end();
+        }
+    } catch (error) {
+        console.error('Error al generar el reporte:', error.message);
+        doc.text('Error al generar el reporte.');
+        doc.end();
+    }
+});
+
+// Configuración de Nodemailer
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    console.error('Error: Variables de entorno EMAIL_USER o EMAIL_PASSWORD no están configuradas');
+    process.exit(1); // Finalizar la aplicación si las credenciales no están configuradas
+}
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'ferremasreportes@gmail.com',
+        pass: 'fsmh yauw zupi wjyh'
+    }
+});
+
+// Endpoint para enviar el PDF por correo
+app.post('/api/enviar-reporte', async (req, res) => {
+    const { email, tipo } = req.body;
+
+    if (!email || !tipo) {
+        console.error('Error: Falta el correo o el tipo de reporte en la solicitud');
+        return res.status(400).json({ error: 'Debe proporcionar un correo y el tipo de reporte' });
+    }
+
+    const doc = new PDFDocument();
+    const filename = `reporte_${tipo}_${Date.now()}.pdf`;
+    const tempDir = './temp';
+    const filePath = `${tempDir}/${filename}`;
+
+    try {
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir);
+        }
+
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        doc.fontSize(18).text(`Reporte: ${tipo}`, { align: 'center' });
+        doc.moveDown();
+
+        if (tipo === 'productos_vendidos') {
+            const query = `
+                SELECT p.nombre, SUM(i.cantidad) AS total_vendido
+                FROM inventario i
+                JOIN productos p ON i.producto_id = p.id
+                GROUP BY p.id
+                ORDER BY total_vendido DESC
+            `;
+            const rows = await new Promise((resolve, reject) => {
+                db.all(query, [], (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+            rows.forEach((row) => {
+                doc.text(`Producto: ${row.nombre} - Total Vendido: ${row.total_vendido}`);
+            });
+        } else if (tipo === 'mas_vendidos') {
+            const query = `
+                SELECT p.nombre, SUM(i.cantidad) AS total_vendido
+                FROM inventario i
+                JOIN productos p ON i.producto_id = p.id
+                GROUP BY p.id
+                ORDER BY total_vendido DESC
+                LIMIT 5
+            `;
+            const rows = await new Promise((resolve, reject) => {
+                db.all(query, [], (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+            rows.forEach((row) => {
+                doc.text(`Producto: ${row.nombre} - Total Vendido: ${row.total_vendido}`);
+            });
+        } else if (tipo === 'categorias_mas_vendidas') {
+            const query = `
+                SELECT c.nombre AS categoria, SUM(i.cantidad) AS total_vendido
+                FROM inventario i
+                JOIN productos p ON i.producto_id = p.id
+                JOIN categorias c ON p.categoria_id = c.id
+                GROUP BY c.id
+                ORDER BY total_vendido DESC
+            `;
+            const rows = await new Promise((resolve, reject) => {
+                db.all(query, [], (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+            rows.forEach((row) => {
+                doc.text(`Categoría: ${row.categoria} - Total Vendido: ${row.total_vendido}`);
+            });
+        } else {
+            doc.text('Tipo de reporte no válido.');
+        }
+
+        doc.end();
+
+        await new Promise((resolve, reject) => {
+            writeStream.on('finish', resolve);
+            writeStream.on('error', reject);
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: `Reporte: ${tipo}`,
+            text: `Adjunto encontrará el reporte solicitado: ${tipo}.`,
+            attachments: [
+                {
+                    filename,
+                    path: filePath
+                }
+            ]
+        };
+
+        await transporter.sendMail(mailOptions);
+        fs.unlinkSync(filePath);
+
+        console.log(`Correo enviado exitosamente a ${email} con el reporte ${tipo}`);
+        res.status(200).json({ message: 'Correo enviado exitosamente' });
+    } catch (error) {
+        console.error('Error al procesar la solicitud en /api/enviar-reporte:', error.message);
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        res.status(500).json({ error: 'Error al enviar el correo' });
+    }
+});
 
 app.listen(port, () => {
     console.log(`Servidor en http://localhost:${port}`);

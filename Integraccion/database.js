@@ -228,6 +228,71 @@ db.serialize(() => {
                 console.log('Usuarios iniciales insertados.');
             }
         });
+
+        // Insertar datos iniciales en inventario
+        db.get('SELECT COUNT(*) AS count FROM inventario', (err, row) => {
+            if (err) {
+                console.error('Error al verificar inventario:', err.message);
+            } else if (row.count === 0) {
+                const inventario = [
+                    { producto_id: 1, sucursal_id: 1, cantidad: 50 },
+                    { producto_id: 2, sucursal_id: 1, cantidad: 30 },
+                    { producto_id: 3, sucursal_id: 2, cantidad: 20 },
+                    { producto_id: 4, sucursal_id: 3, cantidad: 15 },
+                    { producto_id: 5, sucursal_id: 4, cantidad: 40 },
+                    { producto_id: 1, sucursal_id: 2, cantidad: 25 },
+                    { producto_id: 2, sucursal_id: 3, cantidad: 10 },
+                    { producto_id: 3, sucursal_id: 4, cantidad: 5 },
+                ];
+                const insertQuery = `INSERT INTO inventario (producto_id, sucursal_id, cantidad) VALUES (?, ?, ?)`;
+                inventario.forEach((item) => {
+                    db.run(insertQuery, [item.producto_id, item.sucursal_id, item.cantidad], (err) => {
+                        if (err) console.error('Error al insertar inventario:', err.message);
+                    });
+                });
+                console.log('Inventario inicial insertado.');
+            }
+        });
+
+        // Insertar datos iniciales en pedidos (opcional para reportes futuros)
+        db.get('SELECT COUNT(*) AS count FROM pedidos', (err, row) => {
+            if (err) {
+                console.error('Error al verificar pedidos:', err.message);
+            } else if (row.count === 0) {
+                const pedidos = [
+                    { cliente_id: 1, fecha: '2023-01-15', total: 50000 },
+                    { cliente_id: 2, fecha: '2023-02-20', total: 75000 },
+                    { cliente_id: 3, fecha: '2023-03-10', total: 30000 },
+                ];
+                const insertQuery = `INSERT INTO pedidos (cliente_id, fecha, total) VALUES (?, ?, ?)`;
+                pedidos.forEach((pedido) => {
+                    db.run(insertQuery, [pedido.cliente_id, pedido.fecha, pedido.total], (err) => {
+                        if (err) console.error('Error al insertar pedido:', err.message);
+                    });
+                });
+                console.log('Pedidos iniciales insertados.');
+            }
+        });
+
+        // Insertar datos iniciales en categorías (si no existen)
+        db.get('SELECT COUNT(*) AS count FROM categorias', (err, row) => {
+            if (err) {
+                console.error('Error al verificar categorías:', err.message);
+            } else if (row.count === 0) {
+                const categorias = [
+                    { nombre: 'Herramientas Manuales' },
+                    { nombre: 'Herramientas Eléctricas' },
+                    { nombre: 'Materiales de Construcción' },
+                ];
+                const insertQuery = `INSERT INTO categorias (nombre) VALUES (?)`;
+                categorias.forEach((categoria) => {
+                    db.run(insertQuery, [categoria.nombre], (err) => {
+                        if (err) console.error('Error al insertar categoría:', err.message);
+                    });
+                });
+                console.log('Categorías iniciales insertadas.');
+            }
+        });
     });
 });
 
