@@ -1,111 +1,3 @@
-/**
- * Import required modules and initialize the Express application.
- * 
- * Modules:
- * - express: Web framework for Node.js.
- * - cors: Middleware to enable Cross-Origin Resource Sharing (CORS).
- * - vexor: Library for error handling and payment processing.
- * - dotenv: Loads environment variables from a .env file.
- * - url and path: Utilities for handling file paths.
- * - sqlite3: SQLite database driver.
- * - pdfkit: Library for generating PDF documents.
- * - nodemailer: Module to send emails.
- * 
- * Constants:
- * - __filename: The current file's absolute path.
- * - __dirname: The directory name of the current module.
- * 
- * Environment Variables:
- * - Loaded using dotenv to configure the application.
- * 
- * Vexor Configuration:
- * - Initialized with publishableKey, projectId, and apiKey for payment processing.
- */
-
-/**
- * POST /create_payment
- * Endpoint to create a payment using Vexor's MercadoPago integration.
- * 
- * Request Body:
- * - products: Array of product objects, each containing:
- *   - title: Name of the product.
- *   - unit_price: Price per unit of the product.
- *   - quantity: Quantity of the product.
- * 
- * Response:
- * - 200: Returns a JSON object with the payment URL.
- * - 400: Returns an error if the products array is missing or invalid.
- * - 500: Returns an error if payment creation fails.
- */
-
-/**
- * GET /productos/:id
- * Endpoint to retrieve a product by its ID, including its stock information.
- * 
- * Path Parameters:
- * - id: The ID of the product to retrieve.
- * 
- * Response:
- * - 200: Returns the product details and stock.
- * - 404: Returns an error if the product is not found.
- * - 500: Returns an error if there is a database issue.
- */
-
-/**
- * GET /productos
- * Endpoint to retrieve all products, including their stock information.
- * 
- * Response:
- * - 200: Returns an array of products with their details and stock.
- * - 500: Returns an error if there is a database issue.
- */
-
-/**
- * GET /api/database
- * Endpoint to retrieve all tables and their records from the SQLite database.
- * 
- * Response:
- * - 200: Returns an object containing all tables and their records.
- * - 500: Returns an error if there is a database issue.
- */
-
-/**
- * GET /api/reportes
- * Endpoint to generate reports in PDF format.
- * 
- * Query Parameters:
- * - tipo: The type of report to generate. Supported values:
- *   - productos_vendidos: Report of sold products.
- *   - mas_vendidos: Report of the top 5 most sold products.
- *   - categorias_mas_vendidas: Report of the most sold categories.
- * 
- * Response:
- * - 200: Returns the generated PDF report as a downloadable file.
- * - 400: Returns an error if the report type is not specified.
- * - 500: Returns an error if there is an issue generating the report.
- */
-
-/**
- * SQLite Database Connection
- * Establishes a connection to the SQLite database and logs the status.
- * 
- * Error Handling:
- * - Logs an error message if the connection fails.
- * - Logs a success message if the connection is established.
- */
-
-/**
- * Static File Serving
- * Serves static files from the "public" directory.
- */
-
-/**
- * Application Listener
- * Starts the Express server and listens on the specified port.
- * 
- * Logs:
- * - The URL where the server is running.
- */
 import express from 'express'; // Importar el módulo express
 import cors from 'cors'; // Importar el módulo cors para manejar CORS
 import vexor from 'vexor'; // Importar el módulo vexor para manejar errores
@@ -139,12 +31,18 @@ app.use(cors()); // Habilitar CORS para todas las rutas
 app.use(express.json()); // Middleware para parsear el cuerpo de las solicitudes como JSON
 
 app.post('/create_payment', async (req, res) => {
-    const { products } = req.body;
-    console.log('Datos recibidos en /create_payment:', products); // Log para depuración
+    const { products, payer } = req.body; // <-- Recibe payer desde el frontend
+    console.log('Datos recibidos en /create_payment:', products, payer);
 
     if (!products || !Array.isArray(products) || products.length === 0) {
         console.error('Error: Faltan datos de los productos o el formato es incorrecto');
         return res.status(400).json({ error: 'Faltan datos de los productos o el formato es incorrecto' });
+    }
+
+    // Validar que el email esté presente
+    if (!payer || !payer.email) {
+        console.error('Error: El email del comprador es obligatorio');
+        return res.status(400).json({ error: 'El email del comprador es obligatorio' });
     }
 
     const items = products.map(product => {
@@ -160,15 +58,23 @@ app.post('/create_payment', async (req, res) => {
     });
 
     try {
-        console.log('Datos enviados a vexor.pay.mercadopago:', items); // Log para depuración
+        console.log('Datos enviados a vexor.pay.mercadopago:', items, payer);
         const paymentResponse = await vexorInstance.pay.mercadopago({
             items,
+            payer: {
+                email: payer.email,
+                name: payer.name || '',
+                surname: payer.surname || ''
+            },
+            metadata: {
+                email: payer.email
+            }
         });
 
-        console.log('Respuesta de vexor.pay.mercadopago:', paymentResponse); // Log para depuración
+        console.log('Respuesta de vexor.pay.mercadopago:', paymentResponse);
         res.status(200).json({ payment_url: paymentResponse.payment_url });
     } catch (error) {
-        console.error('Error al crear el pago:', error); // Log detallado del error
+        console.error('Error al crear el pago:', error);
         res.status(500).json({ error: error.message || 'Error al crear el pago' });
     }
 });
@@ -491,6 +397,63 @@ app.post('/api/enviar-reporte', async (req, res) => {
 
         res.status(500).json({ error: 'Error al enviar el correo' });
     }
+});
+
+// Endpoint para obtener los pedidos realizados con nombre de cliente
+app.get('/api/pedidos', (req, res) => {
+    const query = `
+        SELECT pedidos.id, pedidos.fecha, pedidos.total, cliente.nombre AS cliente
+        FROM pedidos
+        JOIN cliente ON pedidos.cliente_id = cliente.id
+        ORDER BY pedidos.fecha DESC
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener pedidos:', err.message);
+            res.status(500).json({ error: 'Error al obtener pedidos' });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+app.get('/api/pedidos_con_detalles', (req, res) => {
+    const query = `
+        SELECT 
+            p.id AS pedido_id, p.fecha, p.total, c.nombre AS cliente,
+            d.nombre_producto, d.cantidad, d.valor_producto, d.subtotal
+        FROM pedidos p
+        JOIN cliente c ON p.cliente_id = c.id
+        JOIN detalle_pedido d ON d.pedido_id = p.id
+        ORDER BY p.fecha DESC, p.id, d.id
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener pedidos con detalles:', err.message);
+            res.status(500).json({ error: 'Error al obtener pedidos con detalles' });
+        } else {
+            // Agrupar por pedido
+            const pedidos = {};
+            rows.forEach(row => {
+                if (!pedidos[row.pedido_id]) {
+                    pedidos[row.pedido_id] = {
+                        id: row.pedido_id,
+                        fecha: row.fecha,
+                        total: row.total,
+                        cliente: row.cliente,
+                        productos: []
+                    };
+                }
+                pedidos[row.pedido_id].productos.push({
+                    nombre_producto: row.nombre_producto,
+                    cantidad: row.cantidad,
+                    valor_producto: row.valor_producto,
+                    subtotal: row.subtotal
+                });
+            });
+            res.json(Object.values(pedidos));
+        }
+    });
 });
 
 app.listen(port, () => {

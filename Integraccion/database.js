@@ -118,6 +118,23 @@ db.serialize(() => {
         if (err) console.error('Error al crear la tabla inventario:', err.message);
     });
 
+    // Crear tabla "detalle_pedido"
+    db.run(`
+        CREATE TABLE IF NOT EXISTS detalle_pedido (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pedido_id INTEGER NOT NULL,
+            producto_id INTEGER NOT NULL,
+            nombre_producto TEXT NOT NULL,
+            cantidad INTEGER NOT NULL,
+            valor_producto REAL NOT NULL,
+            subtotal REAL NOT NULL,
+            FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+            FOREIGN KEY (producto_id) REFERENCES productos(id)
+        )
+    `, (err) => {
+        if (err) console.error('Error al crear la tabla detalle_pedido:', err.message);
+    });
+
     // Insertar datos iniciales si las tablas están vacías
     db.serialize(() => {
         // Insertar categorías
@@ -271,6 +288,28 @@ db.serialize(() => {
                     });
                 });
                 console.log('Pedidos iniciales insertados.');
+            }
+        });
+
+        // Insertar datos iniciales en detalle_pedido
+        db.get('SELECT COUNT(*) AS count FROM detalle_pedido', (err, row) => {
+            if (err) {
+                console.error('Error al verificar detalle_pedido:', err.message);
+            } else if (row.count === 0) {
+                const detalles = [
+                    { pedido_id: 1, producto_id: 1, nombre_producto: 'Martillo de Acero', cantidad: 2, valor_producto: 12000, subtotal: 24000 },
+                    { pedido_id: 1, producto_id: 3, nombre_producto: 'Llave Inglesa', cantidad: 2, valor_producto: 13000, subtotal: 26000 },
+                    { pedido_id: 2, producto_id: 2, nombre_producto: 'Taladro Eléctrico', cantidad: 3, valor_producto: 19000, subtotal: 57000 },
+                    { pedido_id: 2, producto_id: 4, nombre_producto: 'Sierra Circular', cantidad: 1, valor_producto: 18000, subtotal: 18000 },
+                    { pedido_id: 3, producto_id: 5, nombre_producto: 'Cemento Portland', cantidad: 3, valor_producto: 10000, subtotal: 30000 }
+                ];
+                const insertQuery = `INSERT INTO detalle_pedido (pedido_id, producto_id, nombre_producto, cantidad, valor_producto, subtotal) VALUES (?, ?, ?, ?, ?, ?)`;
+                detalles.forEach((detalle) => {
+                    db.run(insertQuery, [detalle.pedido_id, detalle.producto_id, detalle.nombre_producto, detalle.cantidad, detalle.valor_producto, detalle.subtotal], (err) => {
+                        if (err) console.error('Error al insertar detalle_pedido:', err.message);
+                    });
+                });
+                console.log('Detalles de pedidos iniciales insertados.');
             }
         });
 

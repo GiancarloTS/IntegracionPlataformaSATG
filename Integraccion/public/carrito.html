@@ -59,6 +59,7 @@
         <div id="cart-items"></div>
         <div id="cart-summary">
             <p>Total: $<span id="cart-total">0.00</span></p>
+            <input type="email" id="payer-email" placeholder="Correo electrónico" required style="padding:8px; border-radius:4px; border:1px solid #ccc; margin-bottom:8px;">
             <button id="checkout-button">Finalizar Compra</button>
         </div>
     </section>
@@ -136,9 +137,15 @@
         // Finalizar compra
         document.getElementById('checkout-button').addEventListener('click', async () => {
             const cart = getCart();
+            const payerEmail = document.getElementById('payer-email').value.trim();
 
             if (!validateCart(cart)) {
                 alert('Error: Faltan datos del producto o son inválidos en el carrito.');
+                return;
+            }
+
+            if (!payerEmail) {
+                alert('Por favor, ingresa tu correo electrónico.');
                 return;
             }
 
@@ -151,12 +158,17 @@
             console.log('Productos enviados:', products); // Depuración
 
             try {
-                const response = await fetch('http://localhost:3000/create_payment', {
+                const response = await fetch('/create_payment', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ products }),
+                    body: JSON.stringify({
+                        products,
+                        payer: {
+                            email: payerEmail
+                        }
+                    }),
                 });
 
                 const data = await response.json();

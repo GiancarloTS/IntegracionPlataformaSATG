@@ -1,75 +1,403 @@
-/* General Styles */
-body {
-    font-family: Arial, sans-serif;
+/* Reset General */
+* {
     margin: 0;
     padding: 0;
-    background-color: #ffffff;
-    color: #333;
+    box-sizing: border-box;
+}
+
+/* Variables de color modo oscuro */
+:root {
+    --rojo-ferreteria: #ff4d4d;
+    --gris-oscuro: #eaeaea;
+    --gris-claro: #23272f;
+    --amarillo: #ffc107;
+    --azul: #3399ff;
+    --verde: #28d17c;
+    --sombra: 0 4px 16px rgba(0,0,0,0.25);
+    --fondo-navbar: #181b20;
+    --fondo-header: #23272f;
+    --fondo-section: #23272f;
+    --fondo-footer: #181b20;
+}
+
+/* Body */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #181b20 60%, #23272f 100%);
+    color: var(--gris-oscuro);
+    min-height: 100vh;
+    padding-bottom: 60px;
 }
 
 /* Header */
 header {
-    background-color: #ff0000;
-    color: white;
-    padding: 1rem;
+    background: var(--fondo-header);
+    color: #fff;
+    padding: 22px 0 12px 0;
     text-align: center;
+    box-shadow: var(--sombra);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    letter-spacing: 2px;
+    /* Cambia la fuente a una más robusta y técnica */
+    font-family: 'Bebas Neue', 'Oswald', 'Impact', 'Arial Black', Arial, sans-serif;
 }
 
 header h1 {
-    margin: 0;
-    font-size: 2rem;
+    font-size: 2.2em;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-shadow: 1px 2px 8px rgba(0,0,0,0.25);
+    margin-bottom: 6px;
+    /* Elimina color para usar los span internos */
+    color: unset;
 }
 
-/* Main Content */
-main {
-    padding: 2rem;
+header h1 .ferre {
+    color: #fff;
 }
 
-/* Table Styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
+header h1 .mas {
+    color: var(--amarillo); /* Usa el amarillo de la paleta */
 }
 
-table th, table td {
-    border: 1px solid #ddd;
-    padding: 0.75rem;
-    text-align: left;
+/* Navegación */
+nav {
+    margin-top: 8px;
 }
 
-table th {
-    background-color: #ff0000;
-    color: white;
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding: 0;
 }
 
-table tr:nth-child(even) {
-    background-color: #f9f9f9;
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.98em;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 16px;
+    background: var(--fondo-navbar);
+    transition: background 0.2s, color 0.2s;
 }
 
-table tr:hover {
-    background-color: #ffe6e6;
+nav a:hover, nav a.active {
+    background: var(--amarillo);
+    color: var(--rojo-ferreteria);
 }
 
-/* Buttons */
-button {
-    background-color: #ff0000;
-    color: white;
+/* Banner Promocional */
+.banner {
+    background: linear-gradient(90deg, var(--amarillo) 60%, #fff2 100%);
+    color: var(--gris-oscuro);
+    padding: 14px 0;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 20px 0 8px 0;
+    border-radius: 8px;
+    box-shadow: var(--sombra);
+    animation: fadeIn 1s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+/* Secciones */
+section {
+    margin: 28px auto;
+    padding: 28px 18px;
+    max-width: 1100px;
+    background: var(--fondo-section);
+    border-radius: 12px;
+    box-shadow: var(--sombra);
+    transition: box-shadow 0.2s;
+}
+
+section:hover {
+    box-shadow: 0 8px 32px rgba(255,77,77,0.13);
+}
+
+section h2 {
+    color: var(--rojo-ferreteria);
+    margin-bottom: 16px;
+    font-size: 1.5em;
+    border-left: 6px solid var(--amarillo);
+    padding-left: 12px;
+    letter-spacing: 1px;
+}
+
+/* Listado de productos */
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    justify-content: center;
+}
+
+.product-card {
+    background: #23272f;
+    border: 1.5px solid #333;
+    border-radius: 10px;
+    width: 230px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    padding: 16px 12px;
+    text-align: center;
+    transition: transform 0.18s, box-shadow 0.18s;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(255,77,77,0.13);
+    border-color: var(--amarillo);
+}
+
+.product-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.13));
+    background: #181b20;
+    border-radius: 8px;
+}
+
+.product-card h3 {
+    font-size: 1.08em;
+    margin-bottom: 6px;
+    color: var(--rojo-ferreteria);
+    font-weight: 600;
+}
+
+product-card p {
+    margin: 6px 0;
+    font-size: 0.98em;
+    color: #bdbdbd;
+}
+
+.product-card .precio {
+    color: var(--verde);
+    font-size: 1.05em;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.product-card button {
+    background: var(--azul);
+    color: #fff;
     border: none;
-    padding: 0.5rem 1rem;
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-size: 0.98em;
     cursor: pointer;
-    border-radius: 4px;
+    font-weight: 500;
+    transition: background 0.2s, transform 0.15s;
+    margin-top: 6px;
 }
 
-button:hover {
-    background-color: #cc0000;
+.product-card button:hover {
+    background: var(--rojo-ferreteria);
+    transform: scale(1.07);
+}
+
+/* Etiqueta de oferta */
+.product-card .oferta {
+    position: absolute;
+    top: 10px;
+    right: -24px;
+    background: var(--amarillo);
+    color: var(--gris-oscuro);
+    font-size: 0.9em;
+    font-weight: bold;
+    padding: 3px 24px;
+    transform: rotate(25deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+}
+
+/* Categorías */
+.categorias {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.categoria {
+    background: #181b20;
+    color: var(--rojo-ferreteria);
+    border: 1.5px solid var(--rojo-ferreteria);
+    border-radius: 16px;
+    padding: 6px 16px;
+    font-size: 0.98em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.categoria:hover, .categoria.active {
+    background: var(--rojo-ferreteria);
+    color: #fff;
+}
+
+/* Formulario de contacto */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 380px;
+    margin: 0 auto;
+}
+
+form input, form textarea, form select {
+    padding: 8px 10px;
+    border: 1.5px solid #444;
+    border-radius: 6px;
+    font-size: 0.98em;
+    background: #181b20;
+    color: #fff;
+    transition: border 0.2s;
+    font-family: inherit;
+}
+
+form input:focus, form textarea:focus, form select:focus {
+    border-color: var(--rojo-ferreteria);
+    outline: none;
+}
+
+form button {
+    background: var(--verde);
+    color: #fff;
+    border: none;
+    padding: 8px 0;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+form button:hover {
+    background: var(--rojo-ferreteria);
 }
 
 /* Footer */
 footer {
-    background-color: #333;
-    color: white;
+    background: var(--fondo-footer);
+    color: #fff;
     text-align: center;
-    padding: 1rem;
-    margin-top: 2rem;
+    padding: 14px 0;
+    position: fixed;
+    width: 100vw;
+    left: 0;
+    bottom: 0;
+    font-size: 0.98em;
+    letter-spacing: 1px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.13);
 }
+
+footer a {
+    color: var(--amarillo);
+    text-decoration: underline;
+    margin-left: 8px;
+}
+
+@media (max-width: 800px) {
+    .product-list {
+        flex-direction: column;
+        align-items: center;
+    }
+    section {
+        padding: 12px 4px;
+    }
+    header h1 {
+        font-size: 1.3em;
+    }
+    nav ul {
+        gap: 8px;
+    }
+    nav a {
+        font-size: 0.93em;
+        padding: 4px 8px;
+    }
+}
+
+/* Estilo para cada pedido en la lista */
+#pedidos-list li {
+    background: #23272f;
+    border: 1.5px solid #333;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    padding: 16px 14px 10px 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+    position: relative;
+    list-style: none;
+    transition: box-shadow 0.2s, border 0.2s;
+}
+
+#pedidos-list li:hover {
+    border-color: var(--amarillo);
+    box-shadow: 0 4px 18px rgba(255,77,77,0.13);
+}
+
+/* Botón "Ver más" */
+.ver-mas-btn {
+    background: var(--azul);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    padding: 6px 18px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    margin-left: 18px;
+    margin-top: 6px;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+    display: inline-block;
+}
+
+.ver-mas-btn:hover {
+    background: var(--rojo-ferreteria);
+    color: #fff;
+    transform: scale(1.07);
+}
+
+/* Detalles del pedido */
+.detalles-pedido {
+    background: #181b20;
+    border: 1px solid #444;
+    border-radius: 8px;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    padding: 10px 18px;
+    color: var(--gris-oscuro);
+    font-size: 0.98em;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+    list-style: disc inside;
+}
+
+.detalles-pedido li {
+    margin-bottom: 6px;
+    border-bottom: 1px dashed #333;
+    padding-bottom: 4px;
+}
+
+.detalles-pedido li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* Asegúrate de importar la fuente Oswald en tu HTML:
+<link href="https://fonts.googleapis.com/css?family=Oswald:700&display=swap" rel="stylesheet">
+*/

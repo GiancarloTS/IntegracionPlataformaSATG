@@ -45,10 +45,8 @@
 
         <div class="orders-list">
             <h2>Pedidos Realizados</h2>
-            <ul>
-                <li>Pedido #001 - Cliente: Juan Pérez - Fecha: 2023-10-01</li>
-                <li>Pedido #002 - Cliente: María López - Fecha: 2023-10-02</li>
-                <li>Pedido #003 - Cliente: Carlos Gómez - Fecha: 2023-10-03</li>
+            <ul id="pedidos-list">
+                <!-- Aquí se llenarán los pedidos desde la base de datos -->
             </ul>
         </div>
 
@@ -82,7 +80,7 @@
 
     </main>
     <footer>
-        <p>&copy; 2024 Ferretemax. Todos los derechos reservados.</p>
+        <p>&copy; 2024 Ferremas. Todos los derechos reservados.</p>
     </footer>
     <script>
         document.getElementById('report-form').addEventListener('submit', function (e) {
@@ -114,6 +112,56 @@
                 alert('Ocurrió un error al enviar el reporte.');
             }
         });
+
+        // Cargar pedidos realizados con botón "Ver más"
+        fetch('/api/pedidos')
+            .then(res => res.json())
+            .then(pedidos => {
+                const ul = document.getElementById('pedidos-list');
+                ul.innerHTML = '';
+                pedidos.forEach(pedido => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        Pedido #${pedido.id} - Cliente: ${pedido.cliente} - Fecha: ${pedido.fecha} - Total: $${pedido.total}
+                        <button class="ver-mas-btn" data-id="${pedido.id}">Ver más</button>
+                        <ul class="detalles-pedido" id="detalles-pedido-${pedido.id}" style="display:none; margin-top:8px;"></ul>
+                    `;
+                    ul.appendChild(li);
+                });
+
+                // Agregar evento a los botones "Ver más"
+                document.querySelectorAll('.ver-mas-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const pedidoId = this.getAttribute('data-id');
+                        const detallesUl = document.getElementById(`detalles-pedido-${pedidoId}`);
+                        if (detallesUl.style.display === 'none') {
+                            // Cargar detalles solo si está oculto
+                            fetch('/api/pedidos_con_detalles')
+                                .then(res => res.json())
+                                .then(pedidosDetalles => {
+                                    const pedido = pedidosDetalles.find(p => p.id == pedidoId);
+                                    if (pedido && pedido.productos.length > 0) {
+                                        detallesUl.innerHTML = pedido.productos.map(prod =>
+                                            `<li>
+                                                <b>${prod.nombre_producto}</b> - Cantidad: ${prod.cantidad} - Valor: $${prod.valor_producto} - Subtotal: $${prod.subtotal}
+                                            </li>`
+                                        ).join('');
+                                    } else {
+                                        detallesUl.innerHTML = '<li>No hay detalles para este pedido.</li>';
+                                    }
+                                    detallesUl.style.display = 'block';
+                                    this.textContent = 'Ocultar';
+                                });
+                        } else {
+                            detallesUl.style.display = 'none';
+                            this.textContent = 'Ver más';
+                        }
+                    });
+                });
+            })
+            .catch(() => {
+                document.getElementById('pedidos-list').innerHTML = '<li>Error al cargar los pedidos.</li>';
+            });
     </script>
 </body>
 </html>
