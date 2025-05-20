@@ -135,12 +135,11 @@
                         const pedidoId = this.getAttribute('data-id');
                         const detallesUl = document.getElementById(`detalles-pedido-${pedidoId}`);
                         if (detallesUl.style.display === 'none') {
-                            // Cargar detalles solo si está oculto
-                            fetch('/api/pedidos_con_detalles')
+                            // Cargar detalles SOLO de este pedido
+                            fetch(`/api/pedidos_con_detalles?id=${pedidoId}`)
                                 .then(res => res.json())
-                                .then(pedidosDetalles => {
-                                    const pedido = pedidosDetalles.find(p => p.id == pedidoId);
-                                    if (pedido && pedido.productos.length > 0) {
+                                .then(pedido => {
+                                    if (pedido && pedido.productos && pedido.productos.length > 0) {
                                         detallesUl.innerHTML = pedido.productos.map(prod =>
                                             `<li>
                                                 <b>${prod.nombre_producto}</b> - Cantidad: ${prod.cantidad} - Valor: $${prod.valor_producto} - Subtotal: $${prod.subtotal}

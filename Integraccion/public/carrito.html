@@ -64,6 +64,8 @@
         </div>
     </section>
 
+    <div id="productos-container"></div>
+
     <script>
         // Obtener carrito del almacenamiento local
         function getCart() {
@@ -150,6 +152,7 @@
             }
 
             const products = cart.map(item => ({
+                producto_id: item.producto_id || item.id, // Soporta ambos nombres
                 title: item.nombre,
                 unit_price: parseFloat(item.precio),
                 quantity: parseInt(item.cantidad, 10),
@@ -186,8 +189,44 @@
             }
         });
 
+        // Agregar un producto al carrito
+        function addToCart(producto) {
+            const cart = getCart();
+            cart.push({
+                producto_id: producto.id || producto.producto_id, // Soporta ambos nombres
+                nombre: producto.nombre,
+                precio: producto.precio,
+                cantidad: 1
+            });
+            saveCart(cart);
+            renderCart();
+        }
+
         // Renderizar el carrito al cargar la página
         renderCart();
+
+        // Suponiendo que tienes una lista de productos en algún lugar
+        const productos = [
+            { id: 1, nombre: 'Producto 1', precio: 10.00 },
+            { id: 2, nombre: 'Producto 2', precio: 15.50 },
+            // ... otros productos ...
+        ];
+
+        // Ejemplo de cómo agregar los productos a la página y asignar el evento de clic
+        const productosContainer = document.getElementById('productos-container');
+        productos.forEach(producto => {
+            const productoDiv = document.createElement('div');
+            productoDiv.className = 'producto';
+            productoDiv.innerHTML = `
+                <h3>${producto.nombre}</h3>
+                <p>Precio: $${producto.precio.toFixed(2)}</p>
+                <button class="add-to-cart">Agregar al Carrito</button>
+            `;
+            productosContainer.appendChild(productoDiv);
+
+            const boton = productoDiv.querySelector('.add-to-cart');
+            boton.onclick = () => addToCart(producto); // producto.id debe existir
+        });
     </script>
 </body>
 
