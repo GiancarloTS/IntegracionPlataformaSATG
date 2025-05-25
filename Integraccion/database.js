@@ -272,39 +272,39 @@ db.serialize(() => {
       } else if (row.count === 0) {
         const productos = [
           {
-            nombre: "Martillo de Acero",
+            nombre: "Martillo de Acero inoxidable",
             descripcion: "Martillo resistente para construcción",
             precio: 12000,
             categoria_id: 1,
-            imagen: "./public/images/taladro.jpg",
+            imagen: "martillo.png",
           },
           {
-            nombre: "Taladro Eléctrico",
+            nombre: "Taladro ",
             descripcion: "Taladro de alta potencia",
             precio: 19000,
             categoria_id: 5,
-            imagen: "images/taladro.jpg",
+            imagen: "taladro.jpg",
           },
           {
             nombre: "Llave Inglesa",
             descripcion: "Llave ajustable de acero",
             precio: 15000,
             categoria_id: 3,
-            imagen: "images/llave.jpg",
+            imagen: "llave.png",
           },
           {
             nombre: "Sierra Circular",
             descripcion: "Sierra para cortes precisos",
             precio: 17000,
             categoria_id: 6,
-            imagen: "images/sierra.jpg",
+            imagen: "sierra.png",
           },
           {
             nombre: "Cemento Portland",
             descripcion: "Cemento de alta calidad",
             precio: 10000,
             categoria_id: 10,
-            imagen: "images/cemento.jpg",
+            imagen: "cemento.png",
           },
         ];
         const insertQuery = `INSERT INTO productos (nombre, descripcion, precio, categoria_id, imagen) VALUES (?, ?, ?, ?, ?)`;

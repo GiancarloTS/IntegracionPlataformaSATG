@@ -25,9 +25,9 @@ const port = 3000;
 const { Vexor } = vexor;
 
 const vexorInstance = new Vexor({
-  publishableKey: process.env.VEXOR_PUBLISHABLE_KEY,
-  projectId: process.env.VEXOR_PROJECT,
-  apiKey: process.env.VEXOR_SECRET_KEY,
+  publishableKey: 'vx_prod_pk_769151bb2eb2ce214cdea3cca029865d_d131cd14_e9d4_4190_bdf1_9fd72ea67da2_7b62d4',
+  projectId: '680dd8ff54ab54c284980947',
+  apiKey: 'vx_prod_sk_6508f65ae151ebc5e8037154a87c21d7_bc0d9532_63ac_4cd4_a52c_a156fe34160a_fce224',
 });
 
 app.use(cors());
@@ -138,7 +138,7 @@ app.post("/webhook/mercadopago", async (req, res) => {
         `https://api.mercadopago.com/v1/payments/${paymentId}`,
         {
           headers: {
-            Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+            Authorization: `Bearer APP_USR-7576810649603357-043000-976f552a337069eee60ba704f37d774e-2407886899`,
           },
         }
       );
@@ -222,12 +222,12 @@ app.get("/productos/:id", (req, res) => {
 // Obtener todos los productos
 app.get("/productos", (req, res) => {
   const query = `
-        SELECT p.id, p.nombre, p.descripcion, p.precio, 
-               IFNULL(SUM(i.cantidad), 0) AS stock
-        FROM productos p
-        LEFT JOIN inventario i ON p.id = i.producto_id
-        GROUP BY p.id
-    `;
+    SELECT p.id, p.nombre, p.descripcion, p.precio, p.imagen, 
+           IFNULL(SUM(i.cantidad), 0) AS stock
+    FROM productos p
+    LEFT JOIN inventario i ON p.id = i.producto_id
+    GROUP BY p.id
+  `;
   db.all(query, (err, rows) => {
     if (err) return res.status(500).json({ error: "Error al obtener productos" });
     res.status(200).json(rows);
@@ -272,7 +272,7 @@ app.get("/api/database", (req, res) => {
 // REPORTES Y CORREO
 // =======================
 
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+if (!'ferremasreportes@gmail.com' || !'fsmh yauw zupi wjyh') {
   console.error("Error: Variables de entorno EMAIL_USER o EMAIL_PASSWORD no están configuradas");
   process.exit(1);
 }
@@ -280,8 +280,8 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    user: 'ferremasreportes@gmail.com',
+    pass: 'fsmh yauw zupi wjyh',
   },
 });
 
@@ -376,7 +376,7 @@ app.post("/api/enviar-reporte", async (req, res) => {
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: 'ferremasreportes@gmail.com',
       to: email,
       subject: `Reporte: ${tipo}`,
       text: `Adjunto encontrará el reporte solicitado: ${tipo}.`,

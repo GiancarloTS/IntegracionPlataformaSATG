@@ -138,89 +138,125 @@ section h2 {
 .product-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 22px;
+    gap: 32px;
     justify-content: center;
+    margin-top: 24px;
+    animation: fadeInList 1s;
+}
+
+@keyframes fadeInList {
+    from { opacity: 0; transform: translateY(30px);}
+    to { opacity: 1; transform: translateY(0);}
 }
 
 .product-card {
-    background: #23272f;
-    border: 1.5px solid #333;
-    border-radius: 10px;
-    width: 230px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-    padding: 16px 12px;
+    background: linear-gradient(135deg, #23272f 80%, #181b20 100%);
+    border: 2px solid #333;
+    border-radius: 18px;
+    width: 250px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    padding: 22px 16px 18px 16px;
     text-align: center;
-    transition: transform 0.18s, box-shadow 0.18s;
+    transition: transform 0.22s cubic-bezier(.4,2,.6,1), box-shadow 0.22s;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
+    animation: fadeInCard 0.7s;
+}
+
+@keyframes fadeInCard {
+    from { opacity: 0; transform: scale(0.95);}
+    to { opacity: 1; transform: scale(1);}
 }
 
 .product-card:hover {
-    transform: translateY(-6px) scale(1.03);
-    box-shadow: 0 8px 32px rgba(255,77,77,0.13);
+    transform: translateY(-10px) scale(1.04) rotate(-1deg);
+    box-shadow: 0 12px 40px 0 rgba(255,77,77,0.18), 0 2px 12px rgba(0,0,0,0.18);
     border-color: var(--amarillo);
+    z-index: 2;
 }
 
 .product-card img {
-    width: 80px;
-    height: 80px;
+    width: 110px;
+    height: 110px;
     object-fit: contain;
-    margin-bottom: 10px;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.13));
+    margin-bottom: 14px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.18));
     background: #181b20;
-    border-radius: 8px;
+    border-radius: 12px;
+    transition: transform 0.18s;
+    animation: popInImg 0.7s;
+}
+
+@keyframes popInImg {
+    from { opacity: 0; transform: scale(0.8);}
+    to { opacity: 1; transform: scale(1);}
+}
+
+.product-card:hover img {
+    transform: scale(1.08) rotate(-2deg);
 }
 
 .product-card h3 {
-    font-size: 1.08em;
-    margin-bottom: 6px;
+    font-size: 1.18em;
+    margin-bottom: 8px;
     color: var(--rojo-ferreteria);
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(255,77,77,0.08);
+    transition: color 0.2s;
 }
 
 .product-card p {
-    margin: 6px 0;
-    font-size: 0.98em;
+    margin: 7px 0;
+    font-size: 1em;
     color: #bdbdbd;
+    transition: color 0.2s;
 }
 
 .product-card .precio {
     color: var(--verde);
-    font-size: 1.05em;
+    font-size: 1.08em;
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .product-card button {
-    background: var(--azul);
+    background: linear-gradient(90deg, var(--azul) 80%, var(--amarillo) 100%);
     color: #fff;
     border: none;
-    padding: 8px 16px;
-    border-radius: 16px;
-    font-size: 0.98em;
+    padding: 10px 22px;
+    border-radius: 18px;
+    font-size: 1em;
     cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s, transform 0.15s;
-    margin-top: 6px;
+    font-weight: 600;
+    transition: background 0.22s, transform 0.15s, box-shadow 0.18s;
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(51,153,255,0.10);
+    letter-spacing: 1px;
 }
 
 .product-card button:hover {
-    background: var(--rojo-ferreteria);
-    transform: scale(1.07);
+    background: linear-gradient(90deg, var(--rojo-ferreteria) 80%, var(--amarillo) 100%);
+    transform: scale(1.09);
+    box-shadow: 0 6px 18px rgba(255,77,77,0.13);
 }
 
 /* Etiqueta de oferta */
 .product-card .oferta {
     position: absolute;
-    top: 10px;
-    right: -24px;
+    top: 14px;
+    right: -28px;
     background: var(--amarillo);
     color: var(--gris-oscuro);
-    font-size: 0.9em;
+    font-size: 1em;
     font-weight: bold;
-    padding: 3px 24px;
-    transform: rotate(25deg);
+    padding: 4px 32px;
+    transform: rotate(18deg);
     box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+    border-radius: 8px;
+    letter-spacing: 1px;
+    animation: popInImg 0.7s;
 }
 
 /* Categorías */
