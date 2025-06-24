@@ -104,7 +104,31 @@ db.serialize(() => {
       if (err) console.error("Error al crear la tabla empleados:", err.message);
     }
   );
-
+  // Insertar empleados iniciales si la tabla está vacía
+  db.get("SELECT COUNT(*) AS count FROM empleados", (err, row) => {
+    if (err) {
+      console.error("Error al verificar empleados:", err.message);
+    } else if (row.count === 0) {
+      const empleados = [
+        { nombre: "Pedro González", puesto: "Vendedor", sucursal_id: 1 },
+        { nombre: "Lucía Fernández", puesto: "Cajera", sucursal_id: 2 },
+        { nombre: "Miguel Torres", puesto: "Bodeguero", sucursal_id: 3 },
+        { nombre: "Sofía Ramírez", puesto: "Gerente", sucursal_id: 1 },
+        { nombre: "Andrés Soto", puesto: "Vendedor", sucursal_id: 4 }
+      ];
+      const insertQuery = `INSERT INTO empleados (nombre, puesto, sucursal_id) VALUES (?, ?, ?)`;
+      empleados.forEach((empleado) => {
+        db.run(
+          insertQuery,
+          [empleado.nombre, empleado.puesto, empleado.sucursal_id],
+          (err) => {
+            if (err) console.error("Error al insertar empleado:", err.message);
+          }
+        );
+      });
+      console.log("Empleados iniciales insertados.");
+    }
+  });
   // Crear tabla "categorias"
   db.run(
     `
@@ -179,6 +203,7 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS carrito_pendiente (
       id TEXT PRIMARY KEY,
       cliente_id INTEGER,
+      payer_email TEXT,
       productos TEXT,
       total REAL,
       fecha_creacion TEXT,
@@ -300,11 +325,39 @@ db.serialize(() => {
             imagen: "sierra.png",
           },
           {
-            nombre: "Cemento Portland",
+            nombre: "Cemento Polpaico",
             descripcion: "Cemento de alta calidad",
             precio: 10000,
             categoria_id: 10,
             imagen: "cemento.png",
+          },
+          {
+            nombre: "Lijadora Orbital¨Stanley",
+            descripcion: "Lijadora eléctrica para acabados finos",
+            precio: 22000,
+            categoria_id: 7,
+            imagen: "lijadora.jpg",
+          },
+          {
+            nombre: "Guantes de Seguridad",
+            descripcion: "Guantes resistentes para protección en obra",
+            precio: 3500,
+            categoria_id: 18,
+            imagen: "guantes.png",
+          },
+          {
+            nombre: "Pintura Tajamar Acrílica Blanca",
+            descripcion: "Pintura de alta cobertura para interiores",
+            precio: 8500,
+            categoria_id: 13,
+            imagen: "pintura.jpg",
+          },
+          {
+            nombre: "Juego de Destornilladores Stanley",
+            descripcion: "Set de 6 destornilladores de precisión",
+            precio: 9000,
+            categoria_id: 2,
+            imagen: "destornilladores.png",
           },
         ];
         const insertQuery = `INSERT INTO productos (nombre, descripcion, precio, categoria_id, imagen) VALUES (?, ?, ?, ?, ?)`;
@@ -424,6 +477,10 @@ db.serialize(() => {
           { producto_id: 1, sucursal_id: 2, cantidad: 25 },
           { producto_id: 2, sucursal_id: 3, cantidad: 10 },
           { producto_id: 3, sucursal_id: 4, cantidad: 5 },
+          { producto_id: 6, sucursal_id: 1, cantidad: 50 },
+          { producto_id: 7, sucursal_id: 1, cantidad: 50 },
+          { producto_id: 8, sucursal_id: 1, cantidad: 50 },
+          { producto_id: 9, sucursal_id: 1, cantidad: 50 },
         ];
         const insertQuery = `INSERT INTO inventario (producto_id, sucursal_id, cantidad) VALUES (?, ?, ?)`;
         inventario.forEach((item) => {

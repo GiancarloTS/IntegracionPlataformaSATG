@@ -16,32 +16,21 @@
             <input type="text" id="search" placeholder="Buscar producto...">
         </div>
 
-        <table>
+        <!-- Cambia la tabla para que se llene dinámicamente -->
+        <table id="tabla-inventario">
             <thead>
                 <tr>
                     <th>Producto</th>
                     <th>Cantidad</th>
                     <th>Ubicación</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Producto 1</td>
-                    <td>50</td>
-                    <td>Estante A1</td>
-                </tr>
-                <tr>
-                    <td>Producto 2</td>
-                    <td>30</td>
-                    <td>Estante B2</td>
-                </tr>
-                <tr>
-                    <td>Producto 3</td>
-                    <td>20</td>
-                    <td>Estante C3</td>
-                </tr>
+                <!-- Se llenará con JS -->
             </tbody>
         </table>
+        <div id="resumen-stock" style="margin:12px 0;color:#ffc107;font-weight:bold;"></div>
 
         <div class="orders-list">
             <h2>Pedidos Realizados</h2>
@@ -55,9 +44,7 @@
             <form id="report-form">
                 <label for="report-type">Seleccione el tipo de reporte:</label>
                 <select id="report-type" name="report-type">
-                    <option value="productos_vendidos">Productos Vendidos</option>
-                    <option value="mas_vendidos">Productos Más Vendidos</option>
-                    <option value="categorias_mas_vendidas">Categorías Más Vendidas</option>
+                    <option value="inventario_actual">Inventario Actual</option>
                 </select>
                 <button type="submit">Generar Reporte</button>
             </form>
@@ -70,9 +57,7 @@
                 <input type="email" id="email" name="email" placeholder="Ingrese el correo" required>
                 <label for="report-type-email">Seleccione el tipo de reporte:</label>
                 <select id="report-type-email" name="report-type-email">
-                    <option value="productos_vendidos">Productos Vendidos</option>
-                    <option value="mas_vendidos">Productos Más Vendidos</option>
-                    <option value="categorias_mas_vendidas">Categorías Más Vendidas</option>
+                    <option value="inventario_actual">Inventario Actual</option>
                 </select>
                 <button type="submit">Enviar Reporte</button>
             </form>
@@ -161,6 +146,100 @@
             .catch(() => {
                 document.getElementById('pedidos-list').innerHTML = '<li>Error al cargar los pedidos.</li>';
             });
+
+        // Cargar inventario completo
+        let inventarioGlobal = [];
+        function renderInventario(filtro = "") {
+            const tbody = document.querySelector("#tabla-inventario tbody");
+            tbody.innerHTML = "";
+            let encontrado = false;
+            inventarioGlobal.forEach(item => {
+                if (
+                    filtro === "" ||
+                    item.producto.toLowerCase().includes(filtro.toLowerCase())
+                ) {
+                    encontrado = true;
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${item.producto}</td>
+                        <td>
+                            <span class="cantidad-text">${item.cantidad}</span>
+                            <input type="number" class="cantidad-input" value="${item.cantidad}" style="display:none;width:60px;">
+                        </td>
+                        <td>${item.ubicacion}</td>
+                        <td>
+                            <button class="editar-btn">Editar</button>
+                            <button class="guardar-btn" style="display:none;">Guardar</button>
+                        </td>
+                    `;
+                    // Acciones editar/guardar
+                    tr.querySelector(".editar-btn").onclick = function() {
+                        tr.querySelector(".cantidad-text").style.display = "none";
+                        tr.querySelector(".cantidad-input").style.display = "inline-block";
+                        this.style.display = "none";
+                        tr.querySelector(".guardar-btn").style.display = "inline-block";
+                    };
+                    tr.querySelector(".guardar-btn").onclick = async function() {
+                        const nuevaCantidad = tr.querySelector(".cantidad-input").value;
+                        // Actualizar en backend
+                        const res = await fetch('/api/inventario/actualizar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ producto: item.producto, cantidad: nuevaCantidad })
+                        });
+                        if (res.ok) {
+                            item.cantidad = nuevaCantidad;
+                            tr.querySelector(".cantidad-text").textContent = nuevaCantidad;
+                            tr.querySelector(".cantidad-text").style.display = "inline";
+                            tr.querySelector(".cantidad-input").style.display = "none";
+                            this.style.display = "none";
+                            tr.querySelector(".editar-btn").style.display = "inline-block";
+                        } else {
+                            alert("Error al actualizar cantidad");
+                        }
+                    };
+                    tbody.appendChild(tr);
+                }
+            });
+            // Mostrar stock actual de producto específico si hay filtro
+            const resumen = document.getElementById("resumen-stock");
+            if (filtro && encontrado) {
+                const prod = inventarioGlobal.find(i => i.producto.toLowerCase().includes(filtro.toLowerCase()));
+                resumen.textContent = `Stock actual de "${prod.producto}": ${prod.cantidad}`;
+            } else {
+                resumen.textContent = "";
+            }
+        }
+
+        // Buscar producto en inventario
+        document.getElementById("search").addEventListener("input", function() {
+            renderInventario(this.value);
+        });
+
+        // Obtener inventario del backend (ajusta el endpoint según tu API)
+        fetch('/api/inventario')
+            .then(res => res.json())
+            .then(data => {
+                inventarioGlobal = data;
+                renderInventario();
+            });
+
+        // Funcionalidad de edición y eliminación
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-editar')) {
+                const id = e.target.getAttribute('data-id');
+                // Aquí iría la lógica para editar el producto (abrir un modal, etc.)
+                alert(`Editar producto con ID: ${id}`);
+            } else if (e.target.classList.contains('btn-eliminar')) {
+                const id = e.target.getAttribute('data-id');
+                // Aquí iría la lógica para eliminar el producto (confirmación, llamada a la API, etc.)
+                if (confirm(`¿Estás seguro de eliminar el producto con ID: ${id}?`)) {
+                    alert(`Producto con ID: ${id} eliminado.`);
+                    // Actualizar tabla después de eliminar
+                    // llenarTablaInventario(nuevosDatos);
+                }
+            }
+        });
     </script>
 </body>
 </html>

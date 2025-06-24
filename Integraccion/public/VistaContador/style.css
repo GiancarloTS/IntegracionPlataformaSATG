@@ -1,0 +1,248 @@
+/* === Variables y Reset === */
+:root {
+    --rojo-ferreteria: #ff4d4d;
+    --gris-oscuro: #eaeaea;
+    --gris-claro: #23272f;
+    --amarillo: #ffc107;
+    --azul: #3399ff;
+    --verde: #28d17c;
+    --sombra: 0 4px 16px rgba(0,0,0,0.25);
+    --fondo-navbar: #181b20;
+    --fondo-header: #23272f;
+    --fondo-section: #23272f;
+    --fondo-footer: #181b20;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* === Body y Estructura General === */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #181b20 60%, #23272f 100%);
+    color: var(--gris-oscuro);
+    min-height: 100vh;
+    padding-bottom: 60px;
+}
+
+header {
+    background: var(--fondo-header);
+    color: #fff;
+    padding: 1px 0 11px 0;
+    text-align: center;
+    box-shadow: var(--sombra);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    letter-spacing: 2px;
+    font-family: 'Bebas Neue', 'Oswald', 'Impact', 'Arial Black', Arial, sans-serif;
+}
+
+header h1 {
+    font-size: 2.2em;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-shadow: 1px 2px 8px rgba(0,0,0,0.25);
+    margin-bottom: 6px;
+    color: var(--amarillo);
+}
+
+main {
+    max-width: 1100px;
+    margin: 30px auto 0 auto;
+    padding: 28px 18px;
+    background: var(--fondo-section);
+    border-radius: 12px;
+    box-shadow: var(--sombra);
+}
+
+section {
+    margin: 28px auto;
+    padding: 28px 18px;
+    background: var(--fondo-section);
+    border-radius: 12px;
+    box-shadow: var(--sombra);
+    transition: box-shadow 0.2s;
+}
+
+section h2 {
+    color: var(--rojo-ferreteria);
+    margin-bottom: 16px;
+    font-size: 1.5em;
+    border-left: 6px solid var(--amarillo);
+    padding-left: 12px;
+    letter-spacing: 1px;
+}
+
+/* === Formularios === */
+form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+input[type="email"], input[type="date"], select {
+    padding: 8px 10px;
+    border: 1.5px solid #444;
+    border-radius: 6px;
+    font-size: 0.98em;
+    background: #181b20;
+    color: #fff;
+    transition: border 0.2s;
+    font-family: inherit;
+}
+
+input[type="email"]:focus, input[type="date"]:focus, select:focus {
+    border-color: var(--rojo-ferreteria);
+    outline: none;
+}
+
+button {
+    background: linear-gradient(90deg, var(--azul) 80%, var(--amarillo) 100%);
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 18px;
+    font-size: 1em;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.22s, transform 0.15s, box-shadow 0.18s;
+    margin-top: 0;
+    box-shadow: 0 2px 8px rgba(51,153,255,0.10);
+    letter-spacing: 1px;
+}
+
+button:hover {
+    background: linear-gradient(90deg, var(--rojo-ferreteria) 80%, var(--amarillo) 100%);
+    transform: scale(1.09);
+    box-shadow: 0 6px 18px rgba(255,77,77,0.13);
+}
+
+/* === Tabla de Historial de Pedidos === */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #23272f 80%, #181b20 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(255,77,77,0.13), 0 2px 12px rgba(0,0,0,0.18);
+}
+
+th, td {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 1em;
+}
+
+th {
+    background: #181b20;
+    color: #ffc107;
+    font-weight: 700;
+    border-bottom: 2px solid #ff4d4d;
+    letter-spacing: 1px;
+}
+
+tr {
+    transition: background 0.18s;
+    background: transparent;
+    color: #fff;
+}
+
+tr:hover {
+    background: rgba(255,77,77,0.08);
+}
+
+tr.detalle-pedido {
+    background: #23272f;
+    color: #ffc107;
+    border-top: 1px solid #ff4d4d;
+}
+
+tr.detalle-pedido td {
+    border-top: 1px solid #ffc107;
+    background: #23272f;
+    color: #ffc107;
+    font-size: 1em;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+tr.detalle-pedido ul {
+    margin: 0;
+    padding-left: 22px;
+}
+
+tr.detalle-pedido li {
+    margin-bottom: 4px;
+    font-size: 1em;
+    color: #fff;
+}
+
+/* === Mensajes y resultados === */
+#correo-resultado, #resultado-fechas {
+    margin-top: 10px;
+    color: #2d3e50;
+    background: #eaf6ff;
+    border-left: 4px solid #3498db;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 1em;
+    min-height: 24px;
+}
+#correo-resultado,
+#resultado-fechas {
+    display: none;
+    margin-top: 10px;
+    color: #2d3e50;
+    background: #eaf6ff;
+    border-left: 4px solid #3498db;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 1em;
+    min-height: 24px;
+    transition: display 0.2s;
+}
+
+/* === Responsive === */
+@media (max-width: 800px) {
+    main, section {
+        padding: 12px 4px;
+    }
+    header h1 {
+        font-size: 1.3em;
+    }
+    th, td {
+        padding: 10px 8px;
+        font-size: 0.98em;
+    }
+    tr {
+        margin-bottom: 8px;
+    }
+    section h2 {
+        font-size: 1.1em;
+    }
+    form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+}
+
+/* === Footer (opcional) === */
+footer {
+    background: var(--fondo-footer);
+    color: #fff;
+    text-align: center;
+    padding: 14px 0;
+    left: 0;
+    font-size: 0.98em;
+    letter-spacing: 1px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.13);
+}

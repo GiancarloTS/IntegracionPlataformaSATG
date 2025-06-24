@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Vendedor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Panel del Vendedor</h1>
+    </header>
+    <main>
+        <!-- Registrar nuevo producto -->
+        <section>
+            <h2>Registrar nuevo producto</h2>
+            <form id="form-nuevo-producto">
+                <input type="text" id="nombre-producto" name="nombre" placeholder="Nombre del producto" required>
+                <input type="text" id="descripcion-producto" name="descripcion" placeholder="Descripción" required>
+                <input type="number" id="precio-producto" name="precio" placeholder="Precio" min="0" required>
+                <input type="number" id="stock-producto" name="stock" placeholder="Stock inicial" min="0" required>
+                <select id="categoria-producto" name="categoria_id" required>
+                    <option value="">Selecciona categoría</option>
+                    <!-- JS llenará aquí -->
+                </select>
+                <input type="file" id="imagen-producto" name="imagen-producto" accept="image/*" required>
+                <select id="sucursal-producto" name="sucursal_id" required>
+                    <option value="">Selecciona sucursal</option>
+                    <!-- JS llenará aquí -->
+                </select>
+                <button type="submit">Registrar</button>
+            </form>
+            <div id="resultado-nuevo-producto"></div>
+        </section>
+
+        <!-- CRUD de productos -->
+        <section>
+            <h2>Gestión de productos</h2>
+            <table id="tabla-productos">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- JS llenará aquí -->
+                </tbody>
+            </table>
+            <!-- Formulario de edición (modal simple) -->
+            <form id="form-editar-producto" style="display:none; background:#23272f; padding:16px; border-radius:8px;">
+                <input type="hidden" id="editar-id">
+                <input type="text" id="editar-nombre" placeholder="Nombre" required>
+                <input type="text" id="editar-descripcion" placeholder="Descripción" required>
+                <input type="number" id="editar-precio" placeholder="Precio" min="0" required>
+                <select id="editar-categoria" required>
+                    <option value="">Selecciona categoría</option>
+                </select>
+                <input type="file" id="editar-imagen" accept="image/*">
+                <button type="submit">Guardar cambios</button>
+                <button type="button" id="cancelar-edicion">Cancelar</button>
+            </form>
+        </section>
+
+        <!-- Reporte de empleados -->
+        <section>
+            <h2>Reporte de empleados</h2>
+            <form id="form-reporte-empleados">
+                <input type="email" id="correo-reporte-empleados" placeholder="Correo electrónico" required>
+                <button type="submit">Enviar reporte de empleados</button>
+            </form>
+            <div id="resultado-reporte-empleados"></div>
+        </section>
+    </main>
+    <script>
+        // Llenar sucursales en el select
+        fetch('/api/sucursales')
+            .then(res => res.json())
+            .then(sucursales => {
+                const select = document.getElementById('sucursal-producto');
+                sucursales.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.nombre;
+                    select.appendChild(opt);
+                });
+            });
+
+        // Llenar categorías en el select
+        fetch('/api/categorias')
+            .then(res => res.json())
+            .then(categorias => {
+                const select = document.getElementById('categoria-producto');
+                const selectEditar = document.getElementById('editar-categoria');
+                categorias.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.nombre;
+                    select.appendChild(opt);
+                    // Opciones para el select de edición
+                    const optEditar = opt.cloneNode(true);
+                    selectEditar.appendChild(optEditar);
+                });
+            });
+
+        // Registrar nuevo producto
+        document.getElementById('form-nuevo-producto').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = document.getElementById('form-nuevo-producto');
+            const formData = new FormData(form);
+
+            const res = await fetch('/api/productos', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            document.getElementById('resultado-nuevo-producto').textContent = data.message || data.error || 'Producto registrado';
+        });
+
+        // Reporte de empleados
+        document.getElementById('form-reporte-empleados').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const correo = document.getElementById('correo-reporte-empleados').value;
+            const res = await fetch('/api/enviar-reporte', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: correo, tipo: 'empleados' })
+            });
+            const data = await res.json();
+            document.getElementById('resultado-reporte-empleados').textContent = data.message || data.error || 'Reporte enviado';
+        });
+
+        // --- CRUD de productos ---
+
+        // Llenar categorías en el select de edición
+        function cargarCategoriasEdicion() {
+            fetch('/api/categorias')
+                .then(res => res.json())
+                .then(categorias => {
+                    const select = document.getElementById('editar-categoria');
+                    select.innerHTML = '<option value="">Selecciona categoría</option>';
+                    categorias.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.nombre;
+                        select.appendChild(opt);
+                    });
+                });
+        }
+
+        // Listar productos
+        function cargarProductos() {
+            fetch('/api/productos/all')
+                .then(res => res.json())
+                .then(productos => {
+                    const tbody = document.querySelector('#tabla-productos tbody');
+                    tbody.innerHTML = '';
+                    productos.forEach(p => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><img src="/images/${p.imagen}" alt="${p.nombre}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;"></td>
+                            <td>${p.nombre}</td>
+                            <td>${p.descripcion}</td>
+                            <td>$${p.precio}</td>
+                            <td>${p.categoria_nombre || ''}</td>
+                            <td>
+                                <button class="btn-editar" data-id="${p.id}">Editar</button>
+                                <button class="btn-eliminar" data-id="${p.id}">Eliminar</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+        cargarProductos();
+
+        // Mostrar formulario de edición
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-editar')) {
+                const id = e.target.getAttribute('data-id');
+                fetch(`/api/productos/${id}`)
+                    .then(res => res.json())
+                    .then(p => {
+                        document.getElementById('form-editar-producto').style.display = 'block';
+                        document.getElementById('editar-id').value = p.id;
+                        document.getElementById('editar-nombre').value = p.nombre;
+                        document.getElementById('editar-descripcion').value = p.descripcion;
+                        document.getElementById('editar-precio').value = p.precio;
+                        cargarCategoriasEdicion();
+                        setTimeout(() => {
+                            document.getElementById('editar-categoria').value = p.categoria_id;
+                        }, 200);
+                    });
+            }
+            if (e.target.classList.contains('btn-eliminar')) {
+                const id = e.target.getAttribute('data-id');
+                if (confirm('¿Seguro que deseas eliminar este producto?')) {
+                    fetch(`/api/productos/${id}`, { method: 'DELETE' })
+                        .then(res => res.json())
+                        .then(() => cargarProductos());
+                }
+            }
+        });
+
+        // Cancelar edición
+        document.getElementById('cancelar-edicion').onclick = function() {
+            document.getElementById('form-editar-producto').style.display = 'none';
+        };
+
+        // Guardar edición
+        document.getElementById('form-editar-producto').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editar-id').value;
+            const nombre = document.getElementById('editar-nombre').value;
+            const descripcion = document.getElementById('editar-descripcion').value;
+            const precio = document.getElementById('editar-precio').value;
+            const categoria_id = document.getElementById('editar-categoria').value;
+            const imagenInput = document.getElementById('editar-imagen');
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            formData.append('descripcion', descripcion);
+            formData.append('precio', precio);
+            formData.append('categoria_id', categoria_id);
+            if (imagenInput.files[0]) {
+                formData.append('imagen-producto', imagenInput.files[0]);
+            }
+            await fetch(`/api/productos/${id}`, {
+                method: 'PUT',
+                body: formData
+            });
+            document.getElementById('form-editar-producto').style.display = 'none';
+            cargarProductos();
+        });
+    </script>
+</body>
+</html>

@@ -311,6 +311,145 @@ footer a {
     margin-left: 8px;
 }
 
+/* Barra de búsqueda */
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #23272f;
+    padding: 18px 22px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+    margin-bottom: 24px;
+    margin-top: 18px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-bar label {
+    color: var(--amarillo);
+    font-weight: 600;
+    font-size: 1.08em;
+    letter-spacing: 1px;
+}
+
+.search-bar input[type="text"] {
+    padding: 10px 16px;
+    border: 1.5px solid #444;
+    border-radius: 8px;
+    font-size: 1em;
+    background: #181b20;
+    color: #fff;
+    transition: border 0.2s, box-shadow 0.2s;
+    width: 240px;
+    box-shadow: 0 1px 4px rgba(51,153,255,0.08);
+}
+
+.search-bar input[type="text"]:focus {
+    border-color: var(--azul);
+    outline: none;
+    box-shadow: 0 2px 8px rgba(51,153,255,0.18);
+}
+
+/* Tabla de inventario */
+#tabla-inventario {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: linear-gradient(135deg, #23272f 80%, #181b20 100%);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(255,77,77,0.13), 0 2px 12px rgba(0,0,0,0.18);
+    margin-bottom: 24px;
+}
+
+#tabla-inventario th, #tabla-inventario td {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 1em;
+}
+
+#tabla-inventario th {
+    background: #181b20;
+    color: #ffc107;
+    font-weight: 700;
+    border-bottom: 2px solid #ff4d4d;
+    letter-spacing: 1px;
+}
+
+#tabla-inventario tr {
+    transition: background 0.18s;
+    background: transparent;
+    color: #fff;
+}
+
+#tabla-inventario tr:hover {
+    background: rgba(255,77,77,0.08);
+}
+
+#tabla-inventario td {
+    border-bottom: 1px solid #333;
+}
+
+#tabla-inventario tr:last-child td {
+    border-bottom: none;
+}
+
+/* Botones de la tabla */
+#tabla-inventario .editar-btn,
+#tabla-inventario .guardar-btn {
+    background: var(--azul);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    padding: 6px 18px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    margin-right: 8px;
+    margin-top: 0;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+    display: inline-block;
+}
+
+#tabla-inventario .editar-btn:hover,
+#tabla-inventario .guardar-btn:hover {
+    background: var(--rojo-ferreteria);
+    color: #fff;
+    transform: scale(1.07);
+}
+
+/* Input de cantidad en edición */
+#tabla-inventario .cantidad-input {
+    background: #181b20;
+    color: #fff;
+    border: 1.5px solid #444;
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 70px;
+    font-size: 1em;
+    margin-left: 4px;
+    transition: border 0.2s;
+}
+
+#tabla-inventario .cantidad-input:focus {
+    border-color: var(--azul);
+    outline: none;
+}
+
+/* Resumen de stock */
+#resumen-stock {
+    margin: 12px 0;
+    color: var(--amarillo);
+    font-weight: bold;
+    font-size: 1.1em;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+/* Responsive */
 @media (max-width: 800px) {
     .product-list {
         flex-direction: column;
@@ -328,6 +467,15 @@ footer a {
     nav a {
         font-size: 0.93em;
         padding: 4px 8px;
+    }
+    .search-bar {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 8px;
+    }
+    #tabla-inventario th, #tabla-inventario td {
+        padding: 10px 8px;
+        font-size: 0.98em;
     }
 }
 

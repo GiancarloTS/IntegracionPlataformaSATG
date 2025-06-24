@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catálogo de Productos | Ferremas</title>
+  <link rel="stylesheet" href="catalogo.css" />
+  <link href="https://fonts.googleapis.com/css?family=Bebas+Neue:400&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1 class="logo-title">
+        <img src="images/logo.png" alt="Logo Ferremas" class="logo-img" />
+        <span class="ferre">Ferre</span><span class="mas">mas</span>
+      </h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="catalogo.html" class="active">Catálogo</a></li>
+          <li><a href="carrito.html">Carrito</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="catalogo-hero">
+      <h2>Catálogo de Productos</h2>
+      <p>Explora nuestra selección de herramientas y materiales de calidad.</p>
+    </section>
+
+    <section id="catalogo-productos" class="catalogo-productos">
+      <div id="product-list" class="product-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 Ferremas. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    async function loadProducts() {
+      try {
+        const response = await fetch(
+          "/productos"
+        );
+        const products = await response.json();
+
+        const productList = document.getElementById("product-list");
+        productList.innerHTML = "";
+
+        products.forEach((product) => {
+          const productCard = document.createElement("div");
+          productCard.className = "product-card";
+
+          const imagenSrc = product.imagen
+            ? `/images/${product.imagen}`
+            : "/images/default.png";
+
+          productCard.innerHTML = `
+            <img src="${imagenSrc}" alt="Imagen de ${product.nombre}" class="product-image">
+            <h3>${product.nombre}</h3>
+            <p>${product.descripcion || "Sin descripción"}</p>
+            <p>Precio: $${product.precio.toFixed(2)}</p>
+            <p>Stock: ${product.stock}</p>
+            <button onclick="addToCart(${product.id})">Agregar al carrito</button>
+          `;
+          productList.appendChild(productCard);
+        });
+      } catch (error) {
+        console.error("Error al cargar productos:", error);
+      }
+    }
+
+    function addToCart(productId) {
+      fetch(
+        `/productos/${productId}`
+      )
+        .then((response) => response.json())
+        .then((product) => {
+          const cart = JSON.parse(localStorage.getItem("cart")) || [];
+          const existingProduct = cart.find((item) => item.id === product.id);
+
+          if (existingProduct) {
+            existingProduct.cantidad += 1;
+          } else {
+            cart.push({ ...product, cantidad: 1 });
+          }
+
+          localStorage.setItem("cart", JSON.stringify(cart));
+          alert(`Producto "${product.nombre}" agregado al carrito.`);
+        })
+        .catch((error) =>
+          console.error("Error al agregar al carrito:", error)
+        );
+    }
+
+    // Cargar productos al cargar la página
+    loadProducts();
+  </script>
+</body>
+</html>

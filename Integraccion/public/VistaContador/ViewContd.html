@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Vista Contador</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Panel del Contador</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Reportes de Ventas</h2>
+            <form id="form-reporte">
+                <label for="tipo-reporte">Tipo de reporte:</label>
+                <select id="tipo-reporte" name="tipo-reporte">
+                    <option value="productos_vendidos">Ventas por producto</option>
+                    <option value="mas_vendidos">Productos más vendidos</option>
+                    <option value="categorias_mas_vendidas">Categorías más vendidas</option>
+                </select>
+                <button type="submit">Descargar PDF</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Recibir reporte por correo</h2>
+            <form id="form-correo">
+                <input type="email" id="correo" placeholder="Correo electrónico" required>
+                <select id="tipo-reporte-correo">
+                    <option value="productos_vendidos">Ventas por producto</option>
+                    <option value="mas_vendidos">Productos más vendidos</option>
+                    <option value="categorias_mas_vendidas">Categorías más vendidas</option>
+                </select>
+                <button type="submit">Enviar</button>
+            </form>
+            <div id="correo-resultado"></div>
+        </section>
+
+        <section>
+            <h2>Historial de Pedidos</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>ID Pedido</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-pedidos"></tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Totales de ventas por fecha</h2>
+            <form id="form-fechas">
+                <label for="fecha-inicio">Desde:</label>
+                <input type="date" id="fecha-inicio" required>
+                <label for="fecha-fin">Hasta:</label>
+                <input type="date" id="fecha-fin" required>
+                <button type="submit">Consultar</button>
+            </form>
+            <div id="resultado-fechas"></div>
+        </section>
+    </main>
+    <script>
+        // Descargar PDF de reporte
+        document.getElementById('form-reporte').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('tipo-reporte').value;
+            window.open(`/api/reportes?tipo=${tipo}`, '_blank');
+        });
+
+        // Enviar reporte por correo
+        document.getElementById('form-correo').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('correo').value;
+            const tipo = document.getElementById('tipo-reporte-correo').value;
+            const res = await fetch('/api/enviar-reporte', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, tipo })
+            });
+            const data = await res.json();
+            // Para el correo
+            const correoResultado = document.getElementById('correo-resultado');
+            correoResultado.textContent = data.message || data.error;
+            correoResultado.style.display = (correoResultado.textContent.trim() !== "") ? "block" : "none";
+        });
+
+        // Cargar historial de pedidos con opción de ver detalles
+        fetch('/api/pedidos')
+            .then(res => res.json())
+            .then(pedidos => {
+                const tbody = document.getElementById('tabla-pedidos');
+                tbody.innerHTML = '';
+                pedidos.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.style.cursor = "pointer";
+                    tr.innerHTML = `<td>${p.id}</td><td>${p.cliente}</td><td>${p.fecha}</td><td>${p.total}</td>`;
+                    tr.addEventListener('click', async function() {
+                        // Si ya hay detalles, los quitamos
+                        if (tr.nextSibling && tr.nextSibling.classList && tr.nextSibling.classList.contains('detalle-pedido')) {
+                            tr.nextSibling.remove();
+                            return;
+                        }
+                        // Obtener detalles del pedido
+                        const res = await fetch(`/api/pedidos_con_detalles?id=${p.id}`);
+                        const detalle = await res.json();
+                        let html = `<td colspan="4"><b>Productos:</b><br>`;
+                        if (detalle.productos && detalle.productos.length > 0) {
+                            html += `<ul style="margin:0;padding-left:20px;">`;
+                            detalle.productos.forEach(prod => {
+                                html += `<li>${prod.nombre_producto} - Cantidad: ${prod.cantidad} - Precio: $${prod.valor_producto} - Subtotal: $${prod.subtotal}</li>`;
+                            });
+                            html += `</ul>`;
+                        } else {
+                            html += `Sin productos`;
+                        }
+                        html += `</td>`;
+                        const trDetalle = document.createElement('tr');
+                        trDetalle.classList.add('detalle-pedido');
+                        trDetalle.innerHTML = html;
+                        tbody.insertBefore(trDetalle, tr.nextSibling);
+                    });
+                    tbody.appendChild(tr);
+                });
+            });
+
+        // Consultar totales de ventas por fecha con más detalles
+        document.getElementById('form-fechas').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const inicio = document.getElementById('fecha-inicio').value;
+            const fin = document.getElementById('fecha-fin').value;
+            const res = await fetch(`/api/pedidos_con_detalles`);
+            const pedidos = await res.json();
+
+            let totalVentas = 0;
+            let totalProductos = 0;
+            let ingreso = 0;
+
+            pedidos.forEach(p => {
+                if (p.fecha >= inicio && p.fecha <= fin) {
+                    totalVentas += Number(p.total);
+                    if (Array.isArray(p.productos)) {
+                        p.productos.forEach(prod => {
+                            totalProductos += Number(prod.cantidad);
+                            ingreso += Number(prod.subtotal);
+                        });
+                    }
+                }
+            });
+
+            // Ganancia estimada (ejemplo: 30% del ingreso)
+            const ganancia = ingreso * 0.3;
+
+            // Para el resumen de fechas
+            const resultadoFechas = document.getElementById('resultado-fechas');
+            resultadoFechas.innerHTML = `
+                <strong>Resumen del ${inicio} al ${fin}:</strong><br>
+                Ingreso del total de ventas: <b>$${totalVentas.toLocaleString()}</b><br>
+                Productos totales vendidos: <b>${totalProductos}</b><br>
+                Ingreso total: <b>$${ingreso.toLocaleString()}</b><br>
+                Ganancia estimada (30%): <b>$${ganancia.toLocaleString()}</b>
+            `;
+            resultadoFechas.style.display = "block";
+        });
+    </script>
+</body>
+</html>

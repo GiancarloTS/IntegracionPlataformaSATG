@@ -11,35 +11,61 @@
   </head>
   <body>
     <header>
-      <h1>Ferremas</h1>
-      <nav>
-        <ul>
-          <li><a href="#home">Inicio</a></li>
-          <li><a href="VistaBodegero/ViewBodge.html">Vista Bodeguero</a></li>
-          <li><a href="Bd.html">Base de datos</a></li>
-          <li><a href="carrito.html">Carrito</a></li>
-        </ul>
-      </nav>
+      <div class="header-content">
+        <h1 class="logo-title">
+          <img src="images/logo.png" alt="Logo Ferremas" class="logo-img" />
+          <span class="ferre">Ferre</span><span class="mas">mas</span>
+        </h1>
+        <nav>
+          <ul>
+            <li><a href="#home">Inicio</a></li>
+            <li><a href="catalogo.html">Catalogo</a></li>
+            <li><a href="VistaContador/ViewContd.html">Vista Contador</a></li>
+            <li><a href="VistaVendedor/ViewVende.html">Vista Vendedor</a></li>
+            <li><a href="VistaBodegero/ViewBodge.html">Vista Bodeguero</a></li><!-- este del nav tiene que ser visto solamente por el bodeguero -->
+            <li><a href="Bd.html">Base de datos</a></li> <!-- este es solamente para herramienta mia para ver la base de datos desde la pagina-->
+            <li><a href="carrito.html">Carrito</a></li>
+          </ul>
+        </nav>
+      </div>
     </header>
 
-    <section id="home">
-      <h2>Bienvenido a Ferremas</h2>
-      <p>
-        Encuentra todo lo que necesitas para tus proyectos de construcción y
-        reparación.
-      </p>
-    </section>
+    <div class="banner">
+      ¡Envíos gratis por compras sobre $50.000! | Atención personalizada y asesoría técnica.
+    </div>
 
-    <section id="products">
-      <h2>Nuestros Productos</h2>
-      <div id="product-list" class="product-list"></div>
-    </section>
+    <main>
+      <section id="home" class="hero-section">
+        <div class="hero-content">
+          <h2>Bienvenido a Ferremas</h2>
+          <p>
+            Encuentra todo lo que necesitas para tus proyectos de construcción y reparación.
+          </p>
+        </div>
+      </section>
+
+      <section id="products">
+        <h2>Nuestros Productos Destacados</h2>
+        <div id="product-list" class="product-list"></div>
+      </section>
+
+      <section id="about">
+        <h2>Sobre Nosotros</h2>
+        <p>
+          En Ferremas, nos dedicamos a ofrecer herramientas y materiales de calidad para tus proyectos.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Ferremas. Todos los derechos reservados.</p>
+    </footer>
 
     <script>
       async function loadProducts() {
         try {
           const response = await fetch(
-            "https://shrew-working-monitor.ngrok-free.app/productos"
+            "/productos"
           );
           const products = await response.json();
 
@@ -52,8 +78,8 @@
             productCard.className = "product-card";
 
             const imagenSrc = product.imagen
-              ? `https://shrew-working-monitor.ngrok-free.app/images/${product.imagen}`
-              : "https://shrew-working-monitor.ngrok-free.app/images/default.png"; // Usa una imagen por defecto si no hay imagen
+              ? `/images/${product.imagen}`
+              : "/images/default.png"; // Usa una imagen por defecto si no hay imagen
 
             productCard.innerHTML = `
                         <img src="${imagenSrc}" alt="Imagen de ${
@@ -76,7 +102,7 @@
 
       function addToCart(productId) {
         fetch(
-          `https://shrew-working-monitor.ngrok-free.app/productos/${productId}`
+          `/productos/${productId}`
         )
           .then((response) => response.json())
           .then((product) => {
@@ -100,17 +126,5 @@
       // Cargar productos al cargar la página
       loadProducts();
     </script>
-
-    <section id="about">
-      <h2>Sobre Nosotros</h2>
-      <p>
-        En Ferremas, nos dedicamos a ofrecer herramientas y materiales de
-        calidad para tus proyectos.
-      </p>
-    </section>
-
-    <footer>
-      <p>&copy; 2024 Ferremas. Todos los derechos reservados.</p>
-    </footer>
   </body>
 </html>
